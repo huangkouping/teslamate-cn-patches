@@ -1,3 +1,9 @@
+# 👏 欢迎特斯拉 X/S 车主加入车友群
+
+## 小红书搜索：**TXC特斯拉ModelX&S车友会**
+
+---
+
 # TeslaMate CN Patches
 
 面向中国用户的 TeslaMate 二次优化补丁。它不是独立的 TeslaMate 部署包，而是建立在两个上游项目之上的体验增强层：先安装官方 TeslaMate，再导入中文 Grafana 仪表盘，最后安装本仓库的补丁。
@@ -42,21 +48,37 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 ## 效果图
 
-| 原生首页与地图 | 原生控制台分组 |
-| --- | --- |
-| ![原生首页与高德地图](docs/images/01-native-home.png) | ![原生控制台双列分组](docs/images/02-native-menu.png) |
+### 原生首页与地图
 
-| Grafana：概况分类 | Grafana：导航优先 |
-| --- | --- |
-| ![Grafana 概况菜单](docs/images/03-grafana-overview-menu.png) | ![Grafana 导航优先](docs/images/04-grafana-navigation-first.png) |
+![原生首页与高德地图](docs/images/01-native-home.png)
 
-| Grafana：车辆分类 | Grafana：行驶双列菜单 |
-| --- | --- |
-| ![Grafana 车辆菜单](docs/images/05-grafana-vehicle-menu.png) | ![Grafana 行驶菜单](docs/images/06-grafana-drive-menu.png) |
+### 原生控制台分组
 
-| Grafana：分析与工具 | Grafana：概览页面 |
-| --- | --- |
-| ![Grafana 分析菜单](docs/images/07-grafana-analysis-menu.png) | ![Grafana 概览](docs/images/08-grafana-overview.png) |
+![原生控制台双列分组](docs/images/02-native-menu.png)
+
+### Grafana：概况分类
+
+![Grafana 概况菜单](docs/images/03-grafana-overview-menu.png)
+
+### Grafana：导航优先
+
+![Grafana 导航优先](docs/images/04-grafana-navigation-first.png)
+
+### Grafana：车辆分类
+
+![Grafana 车辆菜单](docs/images/05-grafana-vehicle-menu.png)
+
+### Grafana：行驶双列菜单
+
+![Grafana 行驶菜单](docs/images/06-grafana-drive-menu.png)
+
+### Grafana：分析与工具
+
+![Grafana 分析菜单](docs/images/07-grafana-analysis-menu.png)
+
+### Grafana：概览页面
+
+![Grafana 概览](docs/images/08-grafana-overview.png)
 
 ## 安装：给首次使用者的完整步骤
 
