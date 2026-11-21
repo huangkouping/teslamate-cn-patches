@@ -50,36 +50,39 @@
       if (menu && !menu.contains(event.target) && !event.target.closest('[data-cn-doc-menu="1"]')) menu.remove();
     });
   }
+  function docsTrigger(target) {
+    const node = target && target.closest && target.closest("a,button,[role=link]");
+    return node && node.textContent.trim() === "说明文档" ? node : null;
+  }
+  function openDocumentationMenu(anchor) {
+    const old = document.getElementById("teslamate-doc-menu");
+    if (old) old.remove();
+    const rect = anchor.getBoundingClientRect();
+    const menu = document.createElement("div");
+    menu.id = "teslamate-doc-menu";
+    menu.className = "teslamate-doc-menu";
+    menu.style.left = `${Math.max(8, rect.left)}px`;
+    menu.style.top = `${Math.min(window.innerHeight - 150, rect.bottom + 6)}px`;
+    [["TeslaMate 官方文档", "https://docs.teslamate.org/"], ["Grafana 中文版仪表盘", "https://github.com/wjsall/teslamate-chinese-dashboards"], ["全中文版补丁", "https://github.com/huangkouping/teslamate-cn-patches"]].forEach(([label, href]) => {
+      const item = document.createElement("a");
+      item.href = href; item.target = "_blank"; item.rel = "noopener noreferrer"; item.textContent = label;
+      menu.appendChild(item);
+    });
+    document.body.appendChild(menu);
+  }
   function documentationMenu() {
-    document.querySelectorAll("a").forEach(anchor => {
-      if (anchor.textContent.trim() !== "说明文档" || anchor.dataset.cnDocMenu) return;
-      anchor.dataset.cnDocMenu = "1";
-      anchor.addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
-        const old = document.getElementById("teslamate-doc-menu");
-        if (old) { old.remove(); return; }
-        const rect = anchor.getBoundingClientRect();
-        const menu = document.createElement("div");
-        menu.id = "teslamate-doc-menu";
-        menu.className = "teslamate-doc-menu";
-        menu.style.left = `${Math.max(8, rect.left)}px`;
-        menu.style.top = `${Math.min(window.innerHeight - 150, rect.bottom + 6)}px`;
-        [
-          ["TeslaMate 官方文档", "https://docs.teslamate.org/"],
-          ["Grafana 中文版仪表盘", "https://github.com/wjsall/teslamate-chinese-dashboards"],
-          ["全中文版补丁", "https://github.com/huangkouping/teslamate-cn-patches"]
-        ].forEach(([label, href]) => {
-          const item = document.createElement("a");
-          item.href = href; item.target = "_blank"; item.rel = "noopener noreferrer"; item.textContent = label;
-          menu.appendChild(item);
-        });
-        document.body.appendChild(menu);
-      });
+    document.querySelectorAll("a,button,[role=link]").forEach(node => {
+      if (node.textContent.trim() === "说明文档") node.dataset.cnDocMenu = "1";
     });
   }
   installStyle();
   installDocumentationMenu();
+  document.addEventListener("pointerdown", event => {
+    const anchor = docsTrigger(event.target);
+    if (!anchor) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    openDocumentationMenu(anchor);
+  }, true);
   new MutationObserver(() => { placeNavigationFirst(); sortMenus(); documentationMenu(); }).observe(document.documentElement, {childList: true, subtree: true});
   placeNavigationFirst();
   sortMenus();
