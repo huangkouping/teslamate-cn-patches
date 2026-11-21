@@ -7,6 +7,7 @@
 - TeslaMate 原生界面：中文控制台菜单、分组、双列布局。
 - 车辆位置：Google Maps 跳转改为高德地图，并将 WGS-84 坐标转换为 GCJ-02，避免中国境内定位偏移。
 - Grafana：将导航置于变量与时间筛选器之前；长菜单自动双列显示，并按常用、行驶、充电、电池和分析的使用顺序排列。
+- Grafana 页面内容：将概览页的能耗/行驶里程卡片明确标为“当前时段”，并在没有行程时显示“暂无行驶数据”。
 
 ## 明确不包含
 
@@ -21,6 +22,13 @@
 3. 检查并重载 Nginx，再以浏览器无痕窗口验证。
 
 详见 [安装说明](docs/installation.md) 与 [升级与回归验证](docs/upgrading.md)。
+
+## Grafana 可重复执行补丁
+
+- `scripts/patch_overview_empty_state.py`：修正概览页三个时段统计卡片的标题与空值提示。
+- `scripts/sync_grafana_navigation.py`：同步所有仪表盘的共享导航；需要与 `assets/grafana-nav-order.js` 一起使用，后者负责“说明文档”的三项外部链接菜单。
+
+这些脚本只备份和修改仪表盘定义，不会读取或上传行程、位置、充电或车辆数据。
 
 ## 兼容性
 
