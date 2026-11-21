@@ -63,7 +63,7 @@
     menu.className = "teslamate-doc-menu";
     menu.style.left = `${Math.max(8, rect.left)}px`;
     menu.style.top = `${Math.min(window.innerHeight - 150, rect.bottom + 6)}px`;
-    [["TeslaMate 官方文档", "https://docs.teslamate.org/"], ["Grafana 中文版仪表盘", "https://github.com/wjsall/teslamate-chinese-dashboards"], ["全中文版补丁", "https://github.com/huangkouping/teslamate-cn-patches"]].forEach(([label, href]) => {
+    [["TeslaMate官方", "https://github.com/teslamate-org/teslamate"], ["Grafana 中文版仪表盘", "https://github.com/wjsall/teslamate-chinese-dashboards"], ["全中文版补丁", "https://github.com/huangkouping/teslamate-cn-patches"]].forEach(([label, href]) => {
       const item = document.createElement("a");
       item.href = href; item.target = "_blank"; item.rel = "noopener noreferrer"; item.textContent = label;
       menu.appendChild(item);
