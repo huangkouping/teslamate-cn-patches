@@ -1,0 +1,25 @@
+# 将此示例的相关片段合并到现有 TeslaMate HTTPS server 块。
+# 不要直接覆盖自己的 server_name、证书、认证或 proxy_pass。
+
+location = /teslamate-cn-ui.js {
+    alias /opt/teslamate-cn-patches/assets/teslamate-cn-ui.js;
+    default_type application/javascript;
+    add_header Cache-Control "no-store";
+}
+
+location = /grafana-nav-order.js {
+    alias /opt/teslamate-cn-patches/assets/grafana-nav-order.js;
+    default_type application/javascript;
+    add_header Cache-Control "no-store";
+}
+
+# 在 TeslaMate 既有的 location / 块中添加：
+# proxy_set_header Accept-Encoding "";
+# sub_filter_once off;
+# sub_filter_types text/html;
+# sub_filter "</head>" "<script src=\"/teslamate-cn-ui.js\"></script></head>";
+
+# 在 Grafana 既有的 location /grafana/ 块中添加：
+# proxy_set_header Accept-Encoding "";
+# sub_filter_once off;
+# sub_filter "</head>" "<script defer src=\"/grafana-nav-order.js\"></script></head>";
