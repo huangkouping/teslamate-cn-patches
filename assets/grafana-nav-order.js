@@ -39,8 +39,49 @@
       if (toolbar && toolbar.firstElementChild !== nav) toolbar.insertBefore(nav, toolbar.firstElementChild);
     });
   }
+  function installDocumentationMenu() {
+    if (document.getElementById("teslamate-doc-menu-style")) return;
+    const style = document.createElement("style");
+    style.id = "teslamate-doc-menu-style";
+    style.textContent = ".teslamate-doc-menu{position:fixed;z-index:10000;min-width:240px;padding:7px;background:#20252b;border:1px solid rgba(255,255,255,.12);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.45)}.teslamate-doc-menu a{display:block;padding:10px 12px;border-radius:4px;color:#c8d1dd;text-decoration:none;font-size:14px}.teslamate-doc-menu a:hover{background:rgba(91,155,213,.16);color:#e7f1ff}";
+    document.head.appendChild(style);
+    document.addEventListener("click", event => {
+      const menu = document.getElementById("teslamate-doc-menu");
+      if (menu && !menu.contains(event.target) && !event.target.closest('[data-cn-doc-menu="1"]')) menu.remove();
+    });
+  }
+  function documentationMenu() {
+    document.querySelectorAll("a").forEach(anchor => {
+      if (anchor.textContent.trim() !== "说明文档" || anchor.dataset.cnDocMenu) return;
+      anchor.dataset.cnDocMenu = "1";
+      anchor.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const old = document.getElementById("teslamate-doc-menu");
+        if (old) { old.remove(); return; }
+        const rect = anchor.getBoundingClientRect();
+        const menu = document.createElement("div");
+        menu.id = "teslamate-doc-menu";
+        menu.className = "teslamate-doc-menu";
+        menu.style.left = `${Math.max(8, rect.left)}px`;
+        menu.style.top = `${Math.min(window.innerHeight - 150, rect.bottom + 6)}px`;
+        [
+          ["TeslaMate 官方文档", "https://docs.teslamate.org/"],
+          ["Grafana 中文版仪表盘", "https://github.com/wjsall/teslamate-chinese-dashboards"],
+          ["全中文版补丁", "https://github.com/huangkouping/teslamate-cn-patches"]
+        ].forEach(([label, href]) => {
+          const item = document.createElement("a");
+          item.href = href; item.target = "_blank"; item.rel = "noopener noreferrer"; item.textContent = label;
+          menu.appendChild(item);
+        });
+        document.body.appendChild(menu);
+      });
+    });
+  }
   installStyle();
-  new MutationObserver(() => { placeNavigationFirst(); sortMenus(); }).observe(document.documentElement, {childList: true, subtree: true});
+  installDocumentationMenu();
+  new MutationObserver(() => { placeNavigationFirst(); sortMenus(); documentationMenu(); }).observe(document.documentElement, {childList: true, subtree: true});
   placeNavigationFirst();
   sortMenus();
+  documentationMenu();
 })();
