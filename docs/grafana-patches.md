@@ -4,6 +4,7 @@
 
 ```bash
 export GRAFANA_PASSWORD='你的 Grafana 管理员密码'
+python3 scripts/tag_grafana_categories.py --backup-dir ./backups
 python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
 python3 scripts/sync_grafana_navigation.py --backup-dir ./backups --include-drivo-link
 ```
@@ -18,4 +19,4 @@ python3 scripts/sync_grafana_navigation.py --backup-dir ./backups --include-driv
 
 ## 分类标签
 
-共享菜单按 `nav_common`、`nav_vehicle`、`nav_drive`、`nav_charge`、`nav_analysis` 标签聚合。不同版本的中文版仪表盘可能新增页面；新增页面需要人工选择合适分类并添加对应标签，之后运行导航同步脚本即可纳入菜单。
+共享菜单按 `nav_common`、`nav_vehicle`、`nav_drive`、`nav_charge`、`nav_analysis` 标签聚合。`tag_grafana_categories.py` 适配中文版仪表盘 v1.13 的已知页面；不同版本新增页面会默认归入“分析与工具”，之后可按使用逻辑调整标签。
