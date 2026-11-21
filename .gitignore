@@ -1,0 +1,7 @@
+# Local operational material only
+*.pem
+*.key
+*.env
+*.sql
+*.dump
+backups/
