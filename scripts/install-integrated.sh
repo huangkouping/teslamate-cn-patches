@@ -12,6 +12,7 @@ UPSTREAM_DIR="${ROOT_DIR}/.upstream/teslamate-chinese-dashboards-${CN_VERSION}"
 COMPOSE_FILE="${COMPOSE_FILE:-}"
 ASSUME_YES=0
 SKIP_GRAFANA=0
+NGINX_CONFIG="${NGINX_CONFIG:-}"
 
 usage() {
   cat <<'EOF'
@@ -22,6 +23,7 @@ usage() {
   --compose-file /路径/compose.yml  指定官方 TeslaMate 的 Compose 文件
   --yes                            跳过开始前确认（仍会要求输入 Grafana 密码）
   --skip-grafana-patches           只迁移中文版仪表盘，不运行本仓库的 Grafana 菜单补丁
+  --nginx-config /路径/站点.conf   自动安全配置标准 Nginx 站点；会先备份、测试再重载
   -h, --help                       显示帮助
 
 环境变量：
@@ -39,6 +41,7 @@ while [[ $# -gt 0 ]]; do
     --compose-file) COMPOSE_FILE="${2:?--compose-file 需要文件路径}"; shift 2 ;;
     --yes) ASSUME_YES=1; shift ;;
     --skip-grafana-patches) SKIP_GRAFANA=1; shift ;;
+    --nginx-config) NGINX_CONFIG="${2:?--nginx-config 需要文件路径}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "未知参数：$1" >&2; usage >&2; exit 2 ;;
   esac
@@ -99,6 +102,17 @@ cd "$ROOT_DIR"
 python3 scripts/tag_grafana_categories.py --backup-dir ./backups
 python3 scripts/sync_grafana_navigation.py --backup-dir ./backups
 python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
+
+if command -v nginx >/dev/null 2>&1; then
+  echo "\n==> 配置 Nginx 浏览器补丁"
+  nginx_args=(--root "$ROOT_DIR")
+  [[ -n "$NGINX_CONFIG" ]] && nginx_args+=(--config "$NGINX_CONFIG")
+  python3 scripts/configure_nginx.py "${nginx_args[@]}" || {
+    echo "Nginx 未自动修改；请按上方提示指定 --nginx-config，或参阅安装说明。" >&2
+  }
+else
+  echo "未检测到 Nginx；跳过浏览器补丁注入。"
+fi
 
 cat <<EOF
 

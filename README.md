@@ -118,7 +118,7 @@ cd /opt/teslamate-cn-patches
 sudo bash scripts/install-integrated.sh --compose-file /你的/TeslaMate/compose.yml
 ```
 
-如果 Compose 文件就在常规位置，可省略 `--compose-file`，脚本会交给中文版官方迁移脚本自动查找。运行中会安全地询问 Grafana 管理员密码；密码不会写入仓库或命令历史。
+如果 Compose 文件就在常规位置，可省略 `--compose-file`，脚本会交给中文版官方迁移脚本自动查找。运行中会安全地询问 Grafana 管理员密码；密码不会写入仓库或命令历史。标准 Nginx 部署也会自动备份、注入、测试并重载；若服务器有多个站点配置，只需补充 `--nginx-config /实际的站点.conf`。
 
 ### 第 3 步：浏览器补丁已在仓库中
 
