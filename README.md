@@ -8,7 +8,7 @@
 
 # TeslaMate CN Patches
 
-面向中国用户的 TeslaMate 二次优化补丁。它不是独立的 TeslaMate 部署包，而是建立在两个上游项目之上的体验增强层：先安装官方 TeslaMate，再导入中文 Grafana 仪表盘，最后安装本仓库的补丁。
+面向中国用户的 TeslaMate 二次优化补丁。它建立在 TeslaMate 官方项目之上，并整合指定版本的中文 Grafana 仪表盘：**官方 TeslaMate 安装完成后，只需运行本仓库的一次整合安装即可**。
 
 > 本仓库不包含车辆数据、账号、域名、令牌、私钥、数据库备份或地址库内容。下方效果图来自真实界面，公开使用前请自行确认其中位置与车辆信息是否适合公开。
 
@@ -20,17 +20,17 @@
 | 2 | [Grafana 中文版仪表盘](https://github.com/wjsall/teslamate-chinese-dashboards) | 为 TeslaMate 数据库提供中文分析仪表盘。必须在官方 TeslaMate 可用后安装。 |
 | 3 | **本仓库** | 优化中国地图跳转、原生控制台菜单、Grafana 导航、分类、空数据提示和升级恢复。 |
 
-安装顺序不能颠倒：**官方 TeslaMate → 中文版仪表盘 → 本补丁**。
+安装关系为：**官方 TeslaMate → 本仓库的一次整合安装（中文版仪表盘 + 本补丁）**。
 
 ## 版本与下载
 
-当前稳定版：[**v1.0.0**](https://github.com/huangkouping/teslamate-cn-patches/releases/tag/v1.0.0)。所有历史版本、变更说明和支持矩阵见 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases)。
+当前稳定版：[**v1.1.0**](https://github.com/huangkouping/teslamate-cn-patches/releases/tag/v1.1.0)。所有历史版本、变更说明和支持矩阵见 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases)。
 
 ## 当前支持与维护策略
 
 当前已在以下组合完整验证：
 
-- 本补丁：**v1.0.0**
+- 本补丁：**v1.1.0**
 - TeslaMate 官方：**4.5.0**
 - `teslamate-chinese-dashboards`：**v1.13.0**
 - Grafana：使用该中文版仪表盘随附/要求的版本
@@ -93,7 +93,7 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 ### 第 0 步：确认基础服务已正常
 
-先完成 [TeslaMate 官方部署](https://docs.teslamate.org/docs/installation/docker)，并确认能打开 TeslaMate 网页、数据库持续写入数据。然后按 [中文版仪表盘说明](https://github.com/wjsall/teslamate-chinese-dashboards) 安装/升级 Grafana 中文版仪表盘。
+先完成 [TeslaMate 官方部署](https://docs.teslamate.org/docs/installation/docker)，并确认能打开 TeslaMate 网页、数据库持续写入数据。**无需单独安装中文版仪表盘**：下一步的整合脚本会锁定 v1.13.0 并调用其官方迁移入口。
 
 如果前两层任一层尚不可用，请先修复它；本仓库不替代它们。
 
@@ -109,11 +109,22 @@ cd /opt/teslamate-cn-patches
 
 没有 Git 时，先安装 Git，或在 GitHub 页面下载 ZIP 后解压到同一目录。
 
-### 第 2 步：浏览器补丁已在仓库中
+### 第 2 步：一次整合安装中文版仪表盘与 Grafana 优化
+
+脚本会先将官方 Grafana 迁移为已验证的中文版仪表盘 v1.13.0，再备份并应用本仓库的 Grafana 分类、导航和概览提示。它不修改 TeslaMate、PostgreSQL 或车辆数据。
+
+```bash
+cd /opt/teslamate-cn-patches
+sudo bash scripts/install-integrated.sh --compose-file /你的/TeslaMate/compose.yml
+```
+
+如果 Compose 文件就在常规位置，可省略 `--compose-file`，脚本会交给中文版官方迁移脚本自动查找。运行中会安全地询问 Grafana 管理员密码；密码不会写入仓库或命令历史。
+
+### 第 3 步：浏览器补丁已在仓库中
 
 克隆完成后，`assets/` 中的两个浏览器补丁已经在目标目录，**不需要再次复制同名文件**。继续执行下一步的 Nginx 注入即可。
 
-### 第 3 步：让 Nginx 向页面注入补丁
+### 第 4 步：让 Nginx 向页面注入补丁
 
 打开自己现有的 TeslaMate HTTPS 站点配置，参考 [Nginx 示例](nginx/teslamate-cn-patches.conf.example)。只合并其中的静态脚本 `location` 和 `sub_filter` 片段，**不要覆盖**自己的域名、证书、密码、访问限制或 `proxy_pass`。详细的、可直接验收的步骤见 [安装说明](docs/installation.md)。
 
@@ -123,21 +134,6 @@ cd /opt/teslamate-cn-patches
 sudo nginx -t
 sudo systemctl reload nginx
 ```
-
-### 第 4 步：整理 Grafana 页面分类、导航和概览提示
-
-这些脚本通过 Grafana API 读取和更新“仪表盘定义”，每次运行前都会在指定目录创建备份；不会导出车辆数据。它们已验证适配中文版仪表盘 v1.13.0，其他版本请先查看 [兼容性说明](docs/compatibility.md)。
-
-```bash
-cd /opt/teslamate-cn-patches
-export GRAFANA_PASSWORD='你的 Grafana 管理员密码'
-
-python3 scripts/tag_grafana_categories.py --backup-dir ./backups
-python3 scripts/sync_grafana_navigation.py --backup-dir ./backups --include-drivo-link
-python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
-```
-
-运行完成后，用浏览器强制刷新（macOS：`⌘⇧R`；Windows/Linux：`Ctrl+F5`）。
 
 ### 第 5 步：验证
 
@@ -154,7 +150,7 @@ python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
 1. 按官方与中文版仪表盘各自的升级说明完成升级。
 2. 确认 TeslaMate、Grafana 和数据库均正常启动。
 3. 更新本仓库：`git pull`。
-4. 重新执行第 4 步的三个脚本；如前端菜单未显示，再检查第 3 步的 Nginx 注入。
+4. 重新执行一次整合脚本；如前端菜单未显示，再检查第 4 步的 Nginx 注入。
 5. 参照 [升级与回归验证](docs/upgrading.md) 逐项检查。
 
 ## 目录说明
