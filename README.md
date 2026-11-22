@@ -58,6 +58,10 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 ![原生控制台双列分组](docs/images/02-native-menu.png)
 
+### Grafana：概览页面
+
+![Grafana 概览](docs/images/08-grafana-overview.png)
+
 ### Grafana：概况分类
 
 ![Grafana 概况菜单](docs/images/03-grafana-overview-menu.jpg)
@@ -77,10 +81,6 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 ### Grafana：分析与工具
 
 ![Grafana 分析菜单](docs/images/07-grafana-analysis-menu.jpg)
-
-### Grafana：概览页面
-
-![Grafana 概览](docs/images/08-grafana-overview.png)
 
 ## 安装：给首次使用者的完整步骤
 
