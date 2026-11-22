@@ -18,7 +18,7 @@
     if (document.getElementById("teslamate-cn-menu-style")) return;
     const style = document.createElement("style");
     style.id = "teslamate-cn-menu-style";
-    style.textContent = ".teslamate-cn-menu-grid{display:grid!important;grid-template-columns:repeat(2,minmax(260px,1fr));gap:10px 16px;width:min(760px,calc(100vw - 28px));padding:12px!important}.teslamate-cn-group{min-width:0;padding:4px 0}.teslamate-cn-section{margin:0 0 6px;padding:8px 10px;border-left:3px solid #5b9bd5;border-radius:3px;background:rgba(91,155,213,.12);color:#dbeafe;font-size:1.05rem;font-weight:750;letter-spacing:.035em;line-height:1.25;pointer-events:none}.teslamate-cn-group>a{display:block;padding:.42rem 10px!important;font-size:.94rem;line-height:1.3}@media(min-width:1100px){.teslamate-cn-menu-grid{left:-180px!important}}@media(max-width:620px){.teslamate-cn-menu-grid{grid-template-columns:1fr;width:calc(100vw - 20px)}}";
+    style.textContent = ".teslamate-cn-menu-grid{display:grid!important;grid-template-columns:repeat(2,minmax(260px,1fr));gap:10px 16px;width:min(760px,calc(100vw - 28px));padding:12px!important}.teslamate-cn-group{min-width:0;padding:4px 0}.teslamate-cn-section{margin:0 0 6px;padding:8px 10px;border-left:3px solid #5b9bd5;border-radius:3px;background:rgba(91,155,213,.12);color:#dbeafe;font-size:1.05rem;font-weight:750;letter-spacing:.035em;line-height:1.25;pointer-events:none}.teslamate-cn-menu-light .teslamate-cn-section{color:#1e4f7a;background:rgba(37,99,171,.11)}.teslamate-cn-group>a{display:block;padding:.42rem 10px!important;font-size:.94rem;line-height:1.3}@media(min-width:1100px){.teslamate-cn-menu-grid{left:-180px!important}}@media(max-width:620px){.teslamate-cn-menu-grid{grid-template-columns:1fr;width:calc(100vw - 20px)}}";
     document.head.appendChild(style);
   }
   function organizeMenu() {
@@ -40,6 +40,8 @@
     });
     menu.replaceChildren(fragment);
     menu.classList.add("teslamate-cn-menu-grid");
+    const rgb = getComputedStyle(menu).backgroundColor.match(/\d+/g);
+    if (rgb && (Number(rgb[0]) * 299 + Number(rgb[1]) * 587 + Number(rgb[2]) * 114) / 1000 > 160) menu.classList.add("teslamate-cn-menu-light");
     menu.dataset.cnMenuOrganized = "1";
   }
   const outOfChina = (lat, lng) => lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
