@@ -71,7 +71,7 @@ curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/m
 
 | 你的情况 | 最短正确路径 |
 | --- | --- |
-| 从未安装 TeslaMate | 按 [从零开始安装](docs/first-install.md) 操作，再运行一次整合安装。 |
+| 从未安装 TeslaMate | 按 [从零开始安装](docs/first-install.md) 的一条命令完成基础服务、中文版和补丁安装。 |
 | 已有官方 TeslaMate，且版本为 4.5.0 | 跳到下方“第 1、2 步”，运行整合安装。 |
 | 已有官方 TeslaMate，但不是 4.5.0 | 先按 [升级说明](docs/upgrading.md) 升级到**已验证的 4.5.0**，确认服务正常后再运行整合安装。 |
 | 已有中文版仪表盘 | 不要重建数据库；先确认 TeslaMate 是 4.5.0，再按升级说明更新中文版并重跑本仓库的 Grafana 补丁。 |
