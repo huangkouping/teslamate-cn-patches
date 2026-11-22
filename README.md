@@ -2,7 +2,7 @@
 
 ## 小红书搜索：**TXC特斯拉ModelX&S车友会**
 
-![TXC 特斯拉 Model X/S 车友会小红书](docs/images/xiaohongshu.jpg)
+![TXC 特斯拉 Model X/S 车友会小红书](docs/images/1-1.jpg)
 
 ---
 
