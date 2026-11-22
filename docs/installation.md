@@ -32,10 +32,12 @@ sudo git pull
 
 ```bash
 cd /opt/teslamate-cn-patches
-sudo bash scripts/install-integrated.sh --compose-file /你的/TeslaMate/compose.yml
+sudo bash scripts/install-integrated.sh --compose-file /opt/teslamate/compose.yml
 ```
 
-`--compose-file` 不能省略：安装器会据此检查 TeslaMate 是否正好是当前已验证的 **4.5.0**。不是 4.5.0 时，先按 [升级说明](upgrading.md) 升级到 4.5.0，再重新运行。不要只因看到上游有更高版本就直接升级；新版本必须先在本仓库的兼容性页面与 Release 中列为已支持。运行中输入 Grafana 管理员密码即可；密码只在当前进程内使用，不写入文件。检测到标准 Nginx 单站点配置时，脚本会自动备份、写入补丁、执行 `nginx -t` 并重载；有多个站点时按提示增加 `--nginx-config /实际站点.conf`。
+`/opt/teslamate/compose.yml` 是本仓库一键从零安装生成的固定位置，直接复制即可；一键安装用户不需要再次运行本命令。若你的 TeslaMate 是以前按官方教程在其他目录部署的，请将该路径替换为该部署实际使用的 `compose.yml`：进入该文件所在目录，执行 `pwd`，将输出目录加上 `/compose.yml`。
+
+`--compose-file` 不能省略：安装器会据此检查 TeslaMate 是否正好是当前已验证的 **4.5.0**。不是 4.5.0 时，先按 [升级说明](upgrading.md) 升级到 4.5.0，再重新运行。不要只因看到上游有更高版本就直接升级；新版本必须先在本仓库的兼容性页面与 Release 中列为已支持。运行中输入 Grafana 管理员密码即可；密码只在当前进程内使用，不写入文件。检测到标准 Nginx 单站点配置时，脚本会自动备份、写入补丁、执行 `nginx -t` 并重载；有多个站点时按提示增加 `--nginx-config` 并填写实际站点配置文件的路径。
 
 若中国大陆服务器不能直连 GitHub 或 Docker Hub，请先配置可用代理/镜像加速，再执行脚本；不要让脚本在网络失败时混用不同版本的镜像与 SQL。
 

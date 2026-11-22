@@ -102,10 +102,12 @@ cd /opt/teslamate-cn-patches
 
 ```bash
 cd /opt/teslamate-cn-patches
-sudo bash scripts/install-integrated.sh --compose-file /你的/TeslaMate/compose.yml
+sudo bash scripts/install-integrated.sh --compose-file /opt/teslamate/compose.yml
 ```
 
-必须填写 `--compose-file`，安装器会先验证其中使用的是已支持的 TeslaMate 4.5.0，避免把未验证版本直接迁移。运行中会安全地询问 Grafana 管理员密码；密码不会写入仓库或命令历史。标准 Nginx 部署也会自动备份、注入、测试并重载；若服务器有多个站点配置，只需补充 `--nginx-config /实际的站点.conf`。
+上面的路径是本仓库“一条命令从零安装”所创建的固定路径，可直接复制，**不需要填写任何内容**。如果你原来使用官方教程部署在别的目录，请把参数换成那个 Compose 文件的真实路径；例如先进入保存 `compose.yml` 的目录并执行 `pwd`，再把输出目录加上 `/compose.yml`。一键安装已经自动执行过本步骤，不需要再执行一次。
+
+必须填写 `--compose-file`，安装器会先验证其中使用的是已支持的 TeslaMate 4.5.0，避免把未验证版本直接迁移。运行中会安全地询问 Grafana 管理员密码；密码不会写入仓库或命令历史。标准 Nginx 部署也会自动备份、注入、测试并重载；若服务器有多个站点配置，只需补充 `--nginx-config` 并填写实际的 Nginx 站点配置文件路径。
 
 ### 第 3 步：浏览器补丁已在仓库中
 
