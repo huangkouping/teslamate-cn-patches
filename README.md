@@ -22,13 +22,20 @@
 
 安装顺序不能颠倒：**官方 TeslaMate → 中文版仪表盘 → 本补丁**。
 
+## 版本与下载
+
+当前稳定版：[**v1.0.0**](https://github.com/huangkouping/teslamate-cn-patches/releases/tag/v1.0.0)。所有历史版本、变更说明和支持矩阵见 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases)。
+
 ## 当前支持与维护策略
 
-当前已在以下组合验证：
+当前已在以下组合完整验证：
 
-- TeslaMate **4.5.x**
-- `teslamate-chinese-dashboards` **v1.13.0**
-- Grafana 使用该中文版仪表盘随附的镜像/配置
+- 本补丁：**v1.0.0**
+- TeslaMate 官方：**4.5.0**
+- `teslamate-chinese-dashboards`：**v1.13.0**
+- Grafana：使用该中文版仪表盘随附/要求的版本
+
+详见 [兼容性与版本策略](docs/compatibility.md)。高德底图涉及 TeslaMate 已编译前端资源，严格仅支持 4.5.0；通用菜单、位置跳转与 Grafana 补丁的支持范围也以该页面为准。
 
 TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面板 UID 或仪表盘标题。本仓库会跟踪上游版本变动并同步修订补丁；升级前请阅读 [升级说明](docs/upgrading.md)，升级后按“验证清单”检查。新出现的仪表盘会默认保留，随后可补充分组规则。
 
@@ -38,7 +45,7 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 - 原生控制台菜单中文化，并以“常用、行驶、充电与电池、地点与系统”分组；桌面端以双列展示，避免长菜单超出屏幕。
 - 将车辆位置的 Google Maps 跳转改为高德地图，并对中国境内坐标进行 WGS-84 → GCJ-02 转换，避免位置偏移。
-- 当前部署中的地图瓦片可切换为高德；这部分依赖 TeslaMate 版本相关前端组件，不能把已编译资产跨版本直接复制。请先使用本仓库的通用 UI 补丁；版本适配完成后再采用对应地图补丁。
+- 高德底图为可选的版本专用补丁：仓库提供 TeslaMate 4.5.0 的可复现生成脚本，不包含或分发上游编译资源；脚本会校验原文件版本，未知版本会拒绝执行。
 
 ### B. Grafana 中文版仪表盘
 
@@ -102,17 +109,13 @@ cd /opt/teslamate-cn-patches
 
 没有 Git 时，先安装 Git，或在 GitHub 页面下载 ZIP 后解压到同一目录。
 
-### 第 2 步：放置浏览器补丁文件
+### 第 2 步：浏览器补丁已在仓库中
 
-```bash
-sudo install -d -m 0755 /opt/teslamate-cn-patches/assets
-sudo install -m 0644 assets/teslamate-cn-ui.js /opt/teslamate-cn-patches/assets/
-sudo install -m 0644 assets/grafana-nav-order.js /opt/teslamate-cn-patches/assets/
-```
+克隆完成后，`assets/` 中的两个浏览器补丁已经在目标目录，**不需要再次复制同名文件**。继续执行下一步的 Nginx 注入即可。
 
 ### 第 3 步：让 Nginx 向页面注入补丁
 
-打开自己现有的 TeslaMate HTTPS 站点配置，参考 [Nginx 示例](nginx/teslamate-cn-patches.conf.example)。只合并其中的静态脚本 `location` 和 `sub_filter` 片段，**不要覆盖**自己的域名、证书、密码、访问限制或 `proxy_pass`。
+打开自己现有的 TeslaMate HTTPS 站点配置，参考 [Nginx 示例](nginx/teslamate-cn-patches.conf.example)。只合并其中的静态脚本 `location` 和 `sub_filter` 片段，**不要覆盖**自己的域名、证书、密码、访问限制或 `proxy_pass`。详细的、可直接验收的步骤见 [安装说明](docs/installation.md)。
 
 完成后检查并重载：
 
@@ -123,7 +126,7 @@ sudo systemctl reload nginx
 
 ### 第 4 步：整理 Grafana 页面分类、导航和概览提示
 
-这些脚本通过 Grafana API 读取和更新“仪表盘定义”，每次运行前都会在指定目录创建备份；不会导出车辆数据。
+这些脚本通过 Grafana API 读取和更新“仪表盘定义”，每次运行前都会在指定目录创建备份；不会导出车辆数据。它们已验证适配中文版仪表盘 v1.13.0，其他版本请先查看 [兼容性说明](docs/compatibility.md)。
 
 ```bash
 cd /opt/teslamate-cn-patches
@@ -142,6 +145,7 @@ python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
 2. Grafana：导航位于筛选器前；“说明文档”点击后出现三项菜单。
 3. 打开一张行驶/充电相关页面：长菜单应显示为两列。
 4. 概览页在最近时间范围内无行程时，能耗/行驶里程应显示“暂无行驶数据”。
+5. 如启用了 4.5.0 高德底图补丁：右下角显示“高德地图”，放大地图后仍为高德。
 
 如果未生效，先强制刷新或使用无痕窗口；其次检查 Nginx 配置是否已经注入两个 JavaScript 文件。
 
@@ -157,7 +161,7 @@ python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
 
 - `assets/`：浏览器端 UI、导航与说明文档菜单补丁。
 - `nginx/`：Nginx 合并示例。
-- `scripts/`：Grafana 分类、共享导航、概览空数据提示的可重复执行脚本。
+- `scripts/`：Grafana 分类、共享导航、概览空数据提示，以及 TeslaMate 4.5.0 高德底图的可重复执行脚本。
 - `docs/`：详细安装、Grafana 脚本、升级与验证说明。
 
 ## 贡献与安全
