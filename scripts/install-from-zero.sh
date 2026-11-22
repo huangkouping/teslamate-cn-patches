@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Fresh, guided TeslaMate deployment. Run as root or with sudo.
+set -euo pipefail
+
+REPO_URL="https://github.com/huangkouping/teslamate-cn-patches.git"
+REPO_DIR="/opt/teslamate-cn-patches"
+INSTALL_DIR="/opt/teslamate"
+
+[[ "${EUID}" == 0 ]] || { echo "请使用：sudo bash scripts/install-from-zero.sh" >&2; exit 1; }
+command -v docker >/dev/null || { echo "请先安装 Docker 与 Docker Compose。" >&2; exit 1; }
+docker compose version >/dev/null 2>&1 || { echo "未找到 Docker Compose 插件。" >&2; exit 1; }
+command -v git >/dev/null || { echo "请先安装 git。" >&2; exit 1; }
+[[ ! -e "$INSTALL_DIR/compose.yml" ]] || { echo "$INSTALL_DIR 已存在 Compose 配置；为保护已有数据，已停止。" >&2; exit 1; }
+
+mkdir -p "$INSTALL_DIR"
+if [[ ! -d "$REPO_DIR/.git" ]]; then git clone "$REPO_URL" "$REPO_DIR"; else git -C "$REPO_DIR" pull --ff-only; fi
+
+umask 077
+ENCRYPTION_KEY="$(openssl rand -hex 32)"
+DATABASE_PASS="$(openssl rand -base64 24 | tr -d '\n')"
+GRAFANA_PASSWORD="$(openssl rand -base64 18 | tr -d '\n')"
+cat > "$INSTALL_DIR/.env" <<EOF
+ENCRYPTION_KEY=${ENCRYPTION_KEY}
+DATABASE_PASS=${DATABASE_PASS}
+GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
+EOF
+
+cat > "$INSTALL_DIR/compose.yml" <<'EOF'
+services:
+  teslamate:
+    image: teslamate/teslamate:4.5.0
+    restart: always
+    environment:
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      DATABASE_USER: teslamate
+      DATABASE_PASS: ${DATABASE_PASS}
+      DATABASE_NAME: teslamate
+      DATABASE_HOST: database
+      MQTT_HOST: mosquitto
+    ports: ["4000:4000"]
+    volumes: ["./import:/opt/app/import"]
+    cap_drop: [all]
+  database:
+    image: postgres:18-trixie
+    restart: always
+    environment:
+      POSTGRES_USER: teslamate
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: teslamate
+    volumes: ["teslamate-db:/var/lib/postgresql"]
+  grafana:
+    image: teslamate/grafana:latest
+    restart: always
+    environment:
+      DATABASE_USER: teslamate
+      DATABASE_PASS: ${DATABASE_PASS}
+      DATABASE_NAME: teslamate
+      DATABASE_HOST: database
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    ports: ["3000:3000"]
+    volumes: ["teslamate-grafana-data:/var/lib/grafana"]
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: always
+    command: mosquitto -c /mosquitto-no-auth.conf
+    volumes: ["mosquitto-conf:/mosquitto/config", "mosquitto-data:/mosquitto/data"]
+volumes:
+  teslamate-db:
+  teslamate-grafana-data:
+  mosquitto-conf:
+  mosquitto-data:
+EOF
+
+cd "$INSTALL_DIR"
+docker compose up -d
+echo "等待基础服务启动…"
+sleep 8
+GRAFANA_PASSWORD="$GRAFANA_PASSWORD" bash "$REPO_DIR/scripts/install-integrated.sh" --yes --compose-file "$INSTALL_DIR/compose.yml"
+
+cat <<EOF
+
+安装完成。请妥善保存以下信息（不会再次显示）：
+  TeslaMate: http://服务器IP:4000
+  Grafana:    http://服务器IP:3000
+  Grafana 用户名: admin
+  Grafana 密码: ${GRAFANA_PASSWORD}
+  密钥文件: ${INSTALL_DIR}/.env （权限 600）
+
+下一步：打开 TeslaMate 页面，按官方流程填写 Tesla access token 与 refresh token。
+未配置 HTTPS 反向代理前，请不要将 4000、3000 端口直接暴露到公网。
+EOF

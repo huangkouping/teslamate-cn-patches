@@ -59,6 +59,14 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 **还没有安装 TeslaMate？** 请先阅读并完成 [从零开始：官方 TeslaMate + 中文优化](docs/first-install.md)。该页把官方基础部署、首次 Tesla 授权和本仓库的一次整合安装串成完整流程。
 
+已安装 Docker、Docker Compose 与 Git 的全新服务器，可直接运行一条命令：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/main/scripts/install-from-zero.sh | sudo bash
+```
+
+脚本会自动生成并保存密钥、启动官方 TeslaMate 4.5.0、迁移中文版并应用补丁；最后只需在网页完成 Tesla 账号授权。详见 [从零开始说明](docs/first-install.md)。
+
 ### 先选你的情况（只走一条路径）
 
 | 你的情况 | 最短正确路径 |

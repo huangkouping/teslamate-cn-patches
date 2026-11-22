@@ -2,6 +2,16 @@
 
 本页给完全新用户使用。顺序固定：**先启动官方 TeslaMate，再运行本仓库的一次整合安装**。以下示例适配本仓库当前验证组合：TeslaMate 4.5.0 与中文版仪表盘 v1.13.0。
 
+## 最简单：一条命令
+
+服务器已装好 Docker、Docker Compose 与 Git 时，直接执行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/main/scripts/install-from-zero.sh | sudo bash
+```
+
+脚本自动创建 `/opt/teslamate`、生成高强度随机密钥、启动官方 TeslaMate 4.5.0、安装中文版与本补丁。它会在结尾显示 Grafana 初始密码，并把所有密钥安全保存在 `/opt/teslamate/.env`（仅 root 可读）。完成后只需打开 TeslaMate 网页填写 Tesla access token 与 refresh token。
+
 > 不要把 4000、3000、1883 直接暴露到公网。官方也建议公网访问使用 VPN、Cloudflare Tunnel 或经过加固的 HTTPS 反向代理。请先完成服务器防火墙与 Nginx/域名配置，再对外开放。
 
 ## 1. 准备 Docker
