@@ -55,40 +55,6 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 - “说明文档”本身不跳转，点击后显示三个外部资源：TeslaMate官方、Grafana 中文版仪表盘、全中文版补丁。
 - 概览页的能耗与行驶里程卡片标明“当前时段”；筛选范围内没有行程时显示“暂无行驶数据”，避免被误认为系统故障。
 
-## 效果图
-
-### 原生首页与地图
-
-![原生首页与高德地图](docs/images/01-native-home.png)
-
-### 原生控制台分组
-
-![原生控制台双列分组](docs/images/02-native-menu.png)
-
-### Grafana：概览页面
-
-![Grafana 概览](docs/images/08-grafana-overview.png)
-
-### Grafana：概况分类
-
-![Grafana 概况菜单](docs/images/03-grafana-overview-menu.jpg)
-
-### Grafana：导航优先
-
-![Grafana 导航优先](docs/images/04-grafana-navigation-first.jpg)
-
-### Grafana：车辆分类
-
-![Grafana 车辆菜单](docs/images/05-grafana-vehicle-menu.jpg)
-
-### Grafana：行驶双列菜单
-
-![Grafana 行驶菜单](docs/images/06-grafana-drive-menu.jpg)
-
-### Grafana：分析与工具
-
-![Grafana 分析菜单](docs/images/07-grafana-analysis-menu.jpg)
-
 ## 安装：给首次使用者的完整步骤
 
 **还没有安装 TeslaMate？** 请先阅读并完成 [从零开始：官方 TeslaMate + 中文优化](docs/first-install.md)。该页把官方基础部署、首次 Tesla 授权和本仓库的一次整合安装串成完整流程。
@@ -165,6 +131,40 @@ sudo systemctl reload nginx
 3. 更新本仓库：`git pull`。
 4. 重新执行一次整合脚本；如前端菜单未显示，再检查第 4 步的 Nginx 注入。
 5. 参照 [升级与回归验证](docs/upgrading.md) 逐项检查。
+
+## 效果图
+
+### 原生首页与地图
+
+![原生首页与高德地图](docs/images/01-native-home.png)
+
+### 原生控制台分组
+
+![原生控制台双列分组](docs/images/02-native-menu.png)
+
+### Grafana：概览页面
+
+![Grafana 概览](docs/images/08-grafana-overview.png)
+
+### Grafana：概况分类
+
+![Grafana 概况菜单](docs/images/03-grafana-overview-menu.jpg)
+
+### Grafana：导航优先
+
+![Grafana 导航优先](docs/images/04-grafana-navigation-first.jpg)
+
+### Grafana：车辆分类
+
+![Grafana 车辆菜单](docs/images/05-grafana-vehicle-menu.jpg)
+
+### Grafana：行驶双列菜单
+
+![Grafana 行驶菜单](docs/images/06-grafana-drive-menu.jpg)
+
+### Grafana：分析与工具
+
+![Grafana 分析菜单](docs/images/07-grafana-analysis-menu.jpg)
 
 ## 目录说明
 
