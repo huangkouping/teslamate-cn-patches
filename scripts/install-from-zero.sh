@@ -7,9 +7,28 @@ REPO_DIR="/opt/teslamate-cn-patches"
 INSTALL_DIR="/opt/teslamate"
 
 [[ "${EUID}" == 0 ]] || { echo "请使用：sudo bash scripts/install-from-zero.sh" >&2; exit 1; }
-command -v docker >/dev/null || { echo "请先安装 Docker 与 Docker Compose。" >&2; exit 1; }
-docker compose version >/dev/null 2>&1 || { echo "未找到 Docker Compose 插件。" >&2; exit 1; }
-command -v git >/dev/null || { echo "请先安装 git。" >&2; exit 1; }
+
+install_base_tools() {
+  command -v curl >/dev/null && command -v git >/dev/null && return
+  if command -v apt-get >/dev/null; then apt-get update && apt-get install -y ca-certificates curl git
+  elif command -v dnf >/dev/null; then dnf install -y ca-certificates curl git
+  elif command -v yum >/dev/null; then yum install -y ca-certificates curl git
+  else echo "不支持自动安装基础工具，请先安装 curl 与 git。" >&2; exit 1; fi
+}
+
+install_base_tools
+if ! command -v docker >/dev/null; then
+  echo "未检测到 Docker，开始使用 Docker 官方安装脚本安装…"
+  curl -fsSL https://get.docker.com | sh
+fi
+systemctl enable --now docker
+if ! docker compose version >/dev/null 2>&1; then
+  if command -v apt-get >/dev/null; then apt-get install -y docker-compose-plugin
+  elif command -v dnf >/dev/null; then dnf install -y docker-compose-plugin
+  elif command -v yum >/dev/null; then yum install -y docker-compose-plugin
+  fi
+fi
+docker compose version >/dev/null 2>&1 || { echo "Docker Compose 插件安装失败，请按 Docker 官方文档处理。" >&2; exit 1; }
 [[ ! -e "$INSTALL_DIR/compose.yml" ]] || { echo "$INSTALL_DIR 已存在 Compose 配置；为保护已有数据，已停止。" >&2; exit 1; }
 
 mkdir -p "$INSTALL_DIR"

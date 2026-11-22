@@ -59,7 +59,7 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 **还没有安装 TeslaMate？** 请先阅读并完成 [从零开始：官方 TeslaMate + 中文优化](docs/first-install.md)。该页把官方基础部署、首次 Tesla 授权和本仓库的一次整合安装串成完整流程。
 
-已安装 Docker、Docker Compose 与 Git 的全新服务器，可直接运行一条命令：
+全新服务器可直接运行一条命令：脚本会先检测 Docker、Docker Compose、Git；缺少时安装基础环境后继续部署。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/main/scripts/install-from-zero.sh | sudo bash

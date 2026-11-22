@@ -4,7 +4,7 @@
 
 ## 最简单：一条命令
 
-服务器已装好 Docker、Docker Compose 与 Git 时，直接执行：
+直接执行即可。脚本会先检测 Docker、Docker Compose 与 Git；缺少时使用系统包管理器补齐基础工具，并使用 Docker 官方安装脚本安装 Docker。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/main/scripts/install-from-zero.sh | sudo bash
