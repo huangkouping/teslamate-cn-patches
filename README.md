@@ -91,6 +91,8 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 ## 安装：给首次使用者的完整步骤
 
+**还没有安装 TeslaMate？** 请先阅读并完成 [从零开始：官方 TeslaMate + 中文优化](docs/first-install.md)。该页把官方基础部署、首次 Tesla 授权和本仓库的一次整合安装串成完整流程。
+
 ### 第 0 步：确认基础服务已正常
 
 先完成 [TeslaMate 官方部署](https://docs.teslamate.org/docs/installation/docker)，并确认能打开 TeslaMate 网页、数据库持续写入数据。**无需单独安装中文版仪表盘**：下一步的整合脚本会锁定 v1.13.0 并调用其官方迁移入口。
