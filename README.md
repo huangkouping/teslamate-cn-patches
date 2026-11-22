@@ -93,6 +93,17 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 **还没有安装 TeslaMate？** 请先阅读并完成 [从零开始：官方 TeslaMate + 中文优化](docs/first-install.md)。该页把官方基础部署、首次 Tesla 授权和本仓库的一次整合安装串成完整流程。
 
+### 先选你的情况（只走一条路径）
+
+| 你的情况 | 最短正确路径 |
+| --- | --- |
+| 从未安装 TeslaMate | 按 [从零开始安装](docs/first-install.md) 操作，再运行一次整合安装。 |
+| 已有官方 TeslaMate，且版本为 4.5.0 | 跳到下方“第 1、2 步”，运行整合安装。 |
+| 已有官方 TeslaMate，但不是 4.5.0 | 先按 [升级说明](docs/upgrading.md) 升级到**已验证的 4.5.0**，确认服务正常后再运行整合安装。 |
+| 已有中文版仪表盘 | 不要重建数据库；先确认 TeslaMate 是 4.5.0，再按升级说明更新中文版并重跑本仓库的 Grafana 补丁。 |
+
+不要直接追逐“最新”标签：上游发布新版本后，先等待本仓库的兼容性页面和 Release 明确列出支持版本，避免前端地图补丁或仪表盘 UID 不匹配。
+
 ### 第 0 步：确认基础服务已正常
 
 先完成 [TeslaMate 官方部署](https://docs.teslamate.org/docs/installation/docker)，并确认能打开 TeslaMate 网页、数据库持续写入数据。**无需单独安装中文版仪表盘**：下一步的整合脚本会锁定 v1.13.0 并调用其官方迁移入口。
@@ -120,7 +131,7 @@ cd /opt/teslamate-cn-patches
 sudo bash scripts/install-integrated.sh --compose-file /你的/TeslaMate/compose.yml
 ```
 
-如果 Compose 文件就在常规位置，可省略 `--compose-file`，脚本会交给中文版官方迁移脚本自动查找。运行中会安全地询问 Grafana 管理员密码；密码不会写入仓库或命令历史。标准 Nginx 部署也会自动备份、注入、测试并重载；若服务器有多个站点配置，只需补充 `--nginx-config /实际的站点.conf`。
+必须填写 `--compose-file`，安装器会先验证其中使用的是已支持的 TeslaMate 4.5.0，避免把未验证版本直接迁移。运行中会安全地询问 Grafana 管理员密码；密码不会写入仓库或命令历史。标准 Nginx 部署也会自动备份、注入、测试并重载；若服务器有多个站点配置，只需补充 `--nginx-config /实际的站点.conf`。
 
 ### 第 3 步：浏览器补丁已在仓库中
 

@@ -1,5 +1,18 @@
 # 升级与回归验证
 
+## 先确定要升级到哪里
+
+当前补丁验证组合为 TeslaMate **4.5.0** 与中文版仪表盘 **v1.13.0**。如果你是从较旧官方 TeslaMate 接入本补丁，应先把官方镜像改为 `teslamate/teslamate:4.5.0`，再执行：
+
+```bash
+cd /你的/TeslaMate/Compose目录
+docker compose pull
+docker compose up -d
+docker compose ps
+```
+
+确认 TeslaMate、数据库和 Grafana 都处于运行状态后，再运行本仓库的整合安装器。不要使用未在 [兼容性说明](compatibility.md) 标明的“latest”或更高版本。
+
 TeslaMate 和 Grafana 镜像升级不会直接修改容器外的本仓库脚本；但上游页面结构、前端文件名及仪表盘标题可能变动，仍需验证。
 
 ## 升级前

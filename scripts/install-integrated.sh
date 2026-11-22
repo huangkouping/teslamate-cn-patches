@@ -52,9 +52,17 @@ need git
 need docker
 need python3
 
-if [[ -n "$COMPOSE_FILE" && ! -f "$COMPOSE_FILE" ]]; then
+if [[ -z "$COMPOSE_FILE" ]]; then
+  echo "为保证版本检查可靠，必须提供官方 TeslaMate 的 Compose 文件：--compose-file /路径/compose.yml" >&2
+  exit 2
+fi
+if [[ ! -f "$COMPOSE_FILE" ]]; then
   echo "找不到 Compose 文件：$COMPOSE_FILE" >&2
   exit 1
+fi
+if ! grep -Eq "teslamate/teslamate:4\\.5\\.0([[:space:]]|$|[\\\"'])" "$COMPOSE_FILE"; then
+  echo "当前安装器仅验证 TeslaMate 4.5.0；请先按 docs/upgrading.md 升级官方 TeslaMate 到 4.5.0，再运行本脚本。" >&2
+  exit 2
 fi
 
 cat <<EOF
