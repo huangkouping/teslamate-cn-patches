@@ -2,6 +2,8 @@
 
 ## 小红书搜索：**TXC特斯拉ModelX&S车友会**
 
+![TXC 特斯拉 Model X/S 车友会小红书](docs/images/xiaohongshu.jpg)
+
 ---
 
 # TeslaMate CN Patches
@@ -58,23 +60,23 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 ### Grafana：概况分类
 
-![Grafana 概况菜单](docs/images/03-grafana-overview-menu.png)
+![Grafana 概况菜单](docs/images/03-grafana-overview-menu.jpg)
 
 ### Grafana：导航优先
 
-![Grafana 导航优先](docs/images/04-grafana-navigation-first.png)
+![Grafana 导航优先](docs/images/04-grafana-navigation-first.jpg)
 
 ### Grafana：车辆分类
 
-![Grafana 车辆菜单](docs/images/05-grafana-vehicle-menu.png)
+![Grafana 车辆菜单](docs/images/05-grafana-vehicle-menu.jpg)
 
 ### Grafana：行驶双列菜单
 
-![Grafana 行驶菜单](docs/images/06-grafana-drive-menu.png)
+![Grafana 行驶菜单](docs/images/06-grafana-drive-menu.jpg)
 
 ### Grafana：分析与工具
 
-![Grafana 分析菜单](docs/images/07-grafana-analysis-menu.png)
+![Grafana 分析菜单](docs/images/07-grafana-analysis-menu.jpg)
 
 ### Grafana：概览页面
 
