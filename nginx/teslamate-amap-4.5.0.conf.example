@@ -1,0 +1,8 @@
+# TeslaMate 4.5.0 高德地图适配资源。合并到现有 HTTPS server 块。
+# 仅在运行 scripts/patch_teslamate_amap.py 成功后启用；不要覆盖自身的
+# server_name、TLS 证书、认证配置或 proxy_pass。
+location = /assets/app-50251e2ae44831f4771df63f9253c265.js {
+    alias /opt/teslamate-cn-patches/assets/app-50251e2ae44831f4771df63f9253c265-amap.js;
+    default_type application/javascript;
+    add_header Cache-Control "no-store";
+}
