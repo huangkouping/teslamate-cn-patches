@@ -31,8 +31,9 @@ usage() {
   GRAFANA_USER     默认 admin
   GRAFANA_PASSWORD 可预先设置，避免交互输入
 
-本脚本不自动改写 Nginx。完成后请按 docs/installation.md 合并一次 Nginx 注入片段，
-这是为了避免覆盖你的域名、证书、访问控制和反向代理配置。
+检测到标准 Nginx 单站点配置时，脚本会先备份、测试后自动注入浏览器补丁。
+无法安全识别站点时不会改写；请使用 --nginx-config 指定实际站点配置文件，
+或按 docs/installation.md 手动合并注入片段。
 EOF
 }
 
@@ -87,7 +88,7 @@ else
   git -C "$UPSTREAM_DIR" checkout --detach "$CN_VERSION"
 fi
 
-echo "\n==> 迁移为中文版仪表盘 ${CN_VERSION}"
+printf '\n==> 迁移为中文版仪表盘 %s\n' "$CN_VERSION"
 migrate=(env "TARGET_REF=${CN_VERSION}" TESLAMATE_CN_PINNED=1)
 [[ -n "$COMPOSE_FILE" ]] && migrate+=("COMPOSE_FILE=${COMPOSE_FILE}")
 migrate+=(bash "$UPSTREAM_DIR/migrate-from-official.sh")
@@ -105,19 +106,22 @@ if [[ -z "${GRAFANA_PASSWORD:-}" ]]; then
   export GRAFANA_PASSWORD
 fi
 
-echo "\n==> 应用 Grafana 分类、导航与概览提示"
+printf '\n==> 应用 Grafana 分类、导航与概览提示\n'
 cd "$ROOT_DIR"
 python3 scripts/tag_grafana_categories.py --backup-dir ./backups
 python3 scripts/sync_grafana_navigation.py --backup-dir ./backups
 python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
 
+nginx_configured=0
 if command -v nginx >/dev/null 2>&1; then
-  echo "\n==> 配置 Nginx 浏览器补丁"
+  printf '\n==> 配置 Nginx 浏览器补丁\n'
   nginx_args=(--root "$ROOT_DIR")
   [[ -n "$NGINX_CONFIG" ]] && nginx_args+=(--config "$NGINX_CONFIG")
-  python3 scripts/configure_nginx.py "${nginx_args[@]}" || {
+  if python3 scripts/configure_nginx.py "${nginx_args[@]}"; then
+    nginx_configured=1
+  else
     echo "Nginx 未自动修改；请按上方提示指定 --nginx-config，或参阅安装说明。" >&2
-  }
+  fi
 else
   echo "未检测到 Nginx；跳过浏览器补丁注入。"
 fi
@@ -125,10 +129,15 @@ fi
 cat <<EOF
 
 完成：中文版仪表盘和 Grafana 优化已应用。
+EOF
+
+if [[ "$nginx_configured" == "1" ]]; then
+  echo "Nginx 浏览器补丁已自动配置并重载；请使用浏览器强制刷新或无痕窗口验收。"
+else
+  cat <<EOF
 
 还差一次 Nginx 配置合并，才能启用 TeslaMate 原生菜单中文分组、定位跳转高德，以及
 Grafana 浏览器导航样式。请按以下文件的“注入浏览器补丁”步骤操作：
   ${ROOT_DIR}/docs/installation.md
-
-完成 Nginx 重载后，使用浏览器强制刷新或无痕窗口验收。
 EOF
+fi

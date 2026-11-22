@@ -9,11 +9,11 @@ INSTALL_DIR="/opt/teslamate"
 [[ "${EUID}" == 0 ]] || { echo "请使用：sudo bash scripts/install-from-zero.sh" >&2; exit 1; }
 
 install_base_tools() {
-  command -v curl >/dev/null && command -v git >/dev/null && return
-  if command -v apt-get >/dev/null; then apt-get update && apt-get install -y ca-certificates curl git
-  elif command -v dnf >/dev/null; then dnf install -y ca-certificates curl git
-  elif command -v yum >/dev/null; then yum install -y ca-certificates curl git
-  else echo "不支持自动安装基础工具，请先安装 curl 与 git。" >&2; exit 1; fi
+  command -v curl >/dev/null && command -v git >/dev/null && command -v openssl >/dev/null && return
+  if command -v apt-get >/dev/null; then apt-get update && apt-get install -y ca-certificates curl git openssl
+  elif command -v dnf >/dev/null; then dnf install -y ca-certificates curl git openssl
+  elif command -v yum >/dev/null; then yum install -y ca-certificates curl git openssl
+  else echo "不支持自动安装基础工具，请先安装 curl、git 与 openssl。" >&2; exit 1; fi
 }
 
 install_base_tools
@@ -21,6 +21,7 @@ if ! command -v docker >/dev/null; then
   echo "未检测到 Docker，开始使用 Docker 官方安装脚本安装…"
   curl -fsSL https://get.docker.com | sh
 fi
+command -v systemctl >/dev/null || { echo "未检测到 systemctl；请先按 Docker 官方文档启动 Docker 服务。" >&2; exit 1; }
 systemctl enable --now docker
 if ! docker compose version >/dev/null 2>&1; then
   if command -v apt-get >/dev/null; then apt-get install -y docker-compose-plugin
@@ -92,8 +93,19 @@ EOF
 
 cd "$INSTALL_DIR"
 docker compose up -d
-echo "等待基础服务启动…"
-sleep 8
+echo "等待 Grafana 就绪…"
+grafana_ready=0
+for _ in $(seq 1 60); do
+  if curl -fsS --max-time 2 http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
+    grafana_ready=1
+    break
+  fi
+  sleep 2
+done
+if [[ "$grafana_ready" != "1" ]]; then
+  echo "Grafana 在 120 秒内未就绪。为保护安装过程，已停止；请执行：docker compose logs --tail=100 grafana" >&2
+  exit 1
+fi
 GRAFANA_PASSWORD="$GRAFANA_PASSWORD" bash "$REPO_DIR/scripts/install-integrated.sh" --yes --compose-file "$INSTALL_DIR/compose.yml"
 
 cat <<EOF

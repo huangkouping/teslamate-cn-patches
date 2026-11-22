@@ -30,6 +30,8 @@ sudo git pull
 
 以下脚本锁定中文版仪表盘 **v1.13.0**，调用其官方 `migrate-from-official.sh` 将已有官方 Grafana 迁移为中文版，再调用本仓库脚本应用菜单分类、导航和概览空数据提示。迁移脚本会备份 Compose 配置；本仓库脚本会把仪表盘定义备份到 `./backups`。
 
+如果曾在 Grafana 手工修改过仪表盘，请先通过「仪表盘 → ⋮ → Export」导出 JSON；中文版迁移会加载自己的仪表盘定义，手工改动不应只依赖脚本备份。
+
 ```bash
 cd /opt/teslamate-cn-patches
 sudo bash scripts/install-integrated.sh --compose-file /opt/teslamate/compose.yml

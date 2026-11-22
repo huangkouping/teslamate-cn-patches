@@ -32,7 +32,7 @@ curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/m
 
 脚本会按以下顺序执行，无需先手动安装 Docker：
 
-1. 检查 `curl`、Git、Docker 和 Docker Compose；缺少基础工具时先用系统包管理器安装。
+1. 检查 `curl`、Git、OpenSSL、Docker 和 Docker Compose；缺少基础工具时先用系统包管理器安装。
 2. 没有 Docker 时，使用 [Docker 官方安装脚本](https://docs.docker.com/engine/install/) 安装 Docker，并启动 Docker 服务。
 3. 在 `/opt/teslamate` 创建官方基础服务、生成数据库密码和 TeslaMate 加密密钥。
 4. 启动 TeslaMate 4.5.0、PostgreSQL、Grafana 和 MQTT。
@@ -66,6 +66,8 @@ http://服务器IP:4000
 ```
 
 按照 [官方 Token 说明](https://docs.teslamate.org/docs/installation/tokens/) 生成并填写 Tesla access token 与 refresh token。授权完成后，TeslaMate 才会开始记录车辆数据。
+
+如果之后改用域名 HTTPS 访问，请在 TeslaMate 的 **设置 → URLs** 中填写实际的 Web App URL 和 Dashboards URL，例如 `https://tesla.example.com` 与 `https://tesla.example.com/grafana/`。这样 TeslaMate 与 Grafana 的互相跳转才会正确。
 
 ### 3. 登录 Grafana
 
@@ -101,16 +103,14 @@ sudo docker compose logs --tail=100 grafana
 3. 仅由 Nginx 对外开放 80/443，Docker 的 4000、3000、1883 端口仅限内网或防火墙白名单；
 4. 为 TeslaMate 和 Grafana 加上访问限制（VPN、Cloudflare Access、Basic Auth 或 IP 白名单至少选择一种）。
 
-Nginx 已准备好以后，执行一次整合安装来注入浏览器补丁。将 `/实际/站点.conf` 换成包含 TeslaMate 反向代理的实际文件：
+Nginx 已准备好以后，运行下面命令注入浏览器补丁。它只会自动处理能安全识别的单个 TeslaMate 站点，不会猜测多个站点配置：
 
 ```bash
 cd /opt/teslamate-cn-patches
-sudo bash scripts/install-integrated.sh \
-  --compose-file /opt/teslamate/compose.yml \
-  --nginx-config /实际/站点.conf
+sudo python3 scripts/configure_nginx.py --root /opt/teslamate-cn-patches
 ```
 
-脚本会备份配置、写入补丁、执行 `nginx -t`；验证不通过会停止，不能验证时不要强行重载。若你的 Nginx 还没有配置，请先按自己的域名和证书方案完成它，再执行上面的命令。可对照 [Nginx 示例](../nginx/teslamate-cn-patches.conf.example)，但不要用示例覆盖自己的 `server_name`、证书、访问控制或 `proxy_pass`。
+脚本会备份配置、写入补丁、执行 `nginx -t` 并重载；验证不通过会自动恢复，不能验证时不要强行重载。若服务器有多个站点，脚本会列出候选文件；从输出中复制 TeslaMate 对应的那一个，再运行同一命令并加 `--config` 参数。若你的 Nginx 还没有配置，请先按自己的域名和证书方案完成它，再执行上面的命令。可对照 [Nginx 示例](../nginx/teslamate-cn-patches.conf.example)，但不要用示例覆盖自己的 `server_name`、证书、访问控制或 `proxy_pass`。
 
 ## 中国大陆服务器的网络说明
 

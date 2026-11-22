@@ -5,11 +5,14 @@
 当前补丁验证组合为 TeslaMate **4.5.0** 与中文版仪表盘 **v1.13.0**。如果你是从较旧官方 TeslaMate 接入本补丁，应先把官方镜像改为 `teslamate/teslamate:4.5.0`，再执行：
 
 ```bash
-cd /你的/TeslaMate/Compose目录
+# 一键从零安装用户直接使用这个固定目录：
+cd /opt/teslamate
 docker compose pull
 docker compose up -d
 docker compose ps
 ```
+
+如果你的旧部署不在 `/opt/teslamate`，请进入保存 `compose.yml` 的实际目录后再执行以上命令；不要把示例路径原样复制到旧部署中。
 
 确认 TeslaMate、数据库和 Grafana 都处于运行状态后，再运行本仓库的整合安装器。不要使用未在 [兼容性说明](compatibility.md) 标明的“latest”或更高版本。
 
