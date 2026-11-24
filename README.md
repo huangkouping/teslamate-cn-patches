@@ -12,12 +12,6 @@
 
 > 本仓库不包含车辆数据、账号、域名、令牌、私钥、数据库备份或地址库内容。下方效果图来自真实界面，公开使用前请自行确认其中位置与车辆信息是否适合公开。
 
-## 项目统计
-
-[![Stars](https://img.shields.io/github/stars/huangkouping/teslamate-cn-patches?style=flat-square&label=收藏)](https://github.com/huangkouping/teslamate-cn-patches/stargazers) [![Forks](https://img.shields.io/github/forks/huangkouping/teslamate-cn-patches?style=flat-square&label=派生)](https://github.com/huangkouping/teslamate-cn-patches/forks) [![Downloads](https://img.shields.io/github/downloads/huangkouping/teslamate-cn-patches/total?style=flat-square&label=发行附件下载)](https://github.com/huangkouping/teslamate-cn-patches/releases)
-
-> 上述为 GitHub 公开统计，不代表实际安装或活跃用户数。Raw 文件下载及订阅刷新不计入发行附件下载量。本统计面板不向安装脚本或模块添加设备追踪。
-
 ## 先理解三者关系
 
 | 层级 | 项目 | 作用 |
@@ -196,3 +190,9 @@ sudo systemctl reload nginx
 ## 许可证
 
 [MIT License](LICENSE)。本许可证只覆盖本仓库自行编写的脚本、配置示例与文档；TeslaMate、Grafana 及中文版仪表盘仍遵循各自的上游许可证。
+
+## 项目统计
+
+[![Stars](https://img.shields.io/github/stars/huangkouping/teslamate-cn-patches?style=flat-square&label=收藏)](https://github.com/huangkouping/teslamate-cn-patches/stargazers) [![Forks](https://img.shields.io/github/forks/huangkouping/teslamate-cn-patches?style=flat-square&label=派生)](https://github.com/huangkouping/teslamate-cn-patches/forks) [![Downloads](https://img.shields.io/github/downloads/huangkouping/teslamate-cn-patches/total?style=flat-square&label=发行附件下载)](https://github.com/huangkouping/teslamate-cn-patches/releases)
+
+> 上述为 GitHub 公开统计，不代表实际安装或活跃用户数。Raw 文件下载及订阅刷新不计入发行附件下载量。本统计面板不向安装脚本或模块添加设备追踪。
