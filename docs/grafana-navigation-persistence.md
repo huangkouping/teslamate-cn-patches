@@ -5,7 +5,9 @@
 
 ## 现象
 
-按仓库安装后导航是正常的（首页 / 概况 / 车辆 / 行驶与能耗 / 充电与电池 / 分析与工具 / 说明文档），但 **只要重启过 Grafana 容器，就又变回镜像自带的几个按钮**。
+按仓库安装后导航是正常的（首页 / 概况 / 车辆 / 行驶与能耗 / 充电与电池 / 分析与工具 / 说明文档 / 行车视频编辑），但 **只要重启过 Grafana 容器，就又变回镜像自带的几个按钮**。
+
+最后一项“行车视频编辑”默认就带在导航里（App Store 入口）；不想要的话给脚本加 `--no-drivo-link`。
 
 ## 原因
 
@@ -58,6 +60,20 @@ systemctl list-timers 'teslamate-cn-nav*'
 journalctl -u teslamate-cn-nav.service -n 20 --no-pager   # 当前已是补丁状态时应看到 changed=0
 ```
 
+亲手验幂等性只要两行（第一行写成补丁状态，第二行应该报 `changed=0`）：
+
+```bash
+GRAFANA_PASSWORD='你的密码' python3 scripts/reapply_grafana_customizations.py --backup-dir ./backups
+GRAFANA_PASSWORD='你的密码' python3 scripts/reapply_grafana_customizations.py --backup-dir ./backups
+```
+
+菜单具体项（低一档就是少了末尾的“行车视频编辑”）：
+
+```bash
+--no-drivo-link     # 不要 App Store 入口
+--home-uid <UID>    # “首页”指向别的面板
+```
+
 卸载：`sudo bash scripts/install-navigation-selfheal.sh --uninstall`
 
 ---
@@ -79,7 +95,7 @@ sudo GRAFANA_PASSWORD='你的密码' python3 scripts/enable-zero-window-navigati
 它会做：
 
 1. 把全部面板导出到 `<compose 目录>/backups/provisioning-off-<时间>/`
-2. 备份 Compose，在 grafana 服务的 `volumes` 里加一行只读挂载（空目录顶掉提供器）
+2. 备份 Compose，在 grafana 服务的 `volumes` 里加一行只读挂载（空目录顶掉提供器）；如果 Compose 里已经有任何挂到 `/etc/grafana/provisioning/dashboards` 的条目（哪怕是手工加的、目录名不同），会直接跳过修改
 3. `docker compose up -d --force-recreate --no-deps grafana`
 4. 等 `/api/health` 就绪
 5. 从快照导入全部面板（带原文件夹）
@@ -128,5 +144,6 @@ sudo GRAFANA_PASSWORD='你的密码' python3 scripts/restore_dashboards.py \
 
 - **只看健不看窗口**：能接受重启后有几分钟默认导航，装方案 A 就够了。
 - **你自己 `docker compose restart` 只重启 Grafana**：文件提供器同样会重新导入，所以两种方案都要提前装好。
+- **镜像自带的导航会被全量覆盖**：本补丁每次写回都用同一套 8 项链接，镜像若新增了导航按钮，需在 `reapply_grafana_customizations.py` 的 `links` 列里补上。
 - **升级后导航又变了**：新版本可能改面板 UID 或标题。先 `git pull`，重跑 `install-integrated.sh`，再确认分类脚本里的 UID 列表是否需要补充（见 `docs/upgrading.md`）。
 - **手动删掉的面板不会自己长回来**：导航是幂等的，但面板本身不会自动重建。
