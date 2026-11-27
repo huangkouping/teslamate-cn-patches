@@ -24,13 +24,15 @@
 
 ## 版本与下载
 
-当前稳定版：[**v1.1.0**](https://github.com/huangkouping/teslamate-cn-patches/releases/tag/v1.1.0)。所有历史版本、变更说明和支持矩阵见 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases)。
+当前稳定版：**v1.2.0**。版本历史与变更说明见 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases)。
+
+> v1.2.0 起，安装脚本会自动装好导航自愈定时器，**重启 Grafana 不会再退回默认导航**，装完无需任何额外操作。
 
 ## 当前支持与维护策略
 
 当前已在以下组合完整验证：
 
-- 本补丁：**v1.1.0**
+- 本补丁：**v1.2.0**
 - TeslaMate 官方：**4.5.0**
 - `teslamate-chinese-dashboards`：**v1.13.0**
 - Grafana：使用该中文版仪表盘随附/要求的版本
@@ -54,19 +56,19 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 - 长菜单自动两列展示；短菜单保留紧凑列表。
 - “说明文档”本身不跳转，点击后显示三个外部资源：TeslaMate官方、Grafana 中文版仪表盘、全中文版补丁。
 - 概览页的能耗与行驶里程卡片标明“当前时段”；筛选范围内没有行程时显示“暂无行驶数据”，避免被误认为系统故障。
-- 导航与分类写在数据库里，重启后可自动恢复：镜像自带的文件提供器会把它覆盖回默认值，本仓库提供自愈定时器（默认 5 分钟一轮）和“零窗口”两种处理方式，详见 [导航持久化说明](docs/grafana-navigation-persistence.md)。
+- 导航与分类写在数据库里，重启后自动恢复：安装时即装好自愈定时器（默认 5 分钟一轮），无需手工配置；追求重启零等待可用“零窗口”模式，详见 [导航持久化说明](docs/grafana-navigation-persistence.md)。
 
 ## 安装：给首次使用者的完整步骤
 
 **还没有安装 TeslaMate？** 请先阅读并完成 [从零开始：官方 TeslaMate + 中文优化](docs/first-install.md)。该页把官方基础部署、首次 Tesla 授权和本仓库的一次整合安装串成完整流程。
 
-全新服务器可直接运行一条命令：脚本会先检测 Docker、Docker Compose、Git；缺少时安装基础环境后继续部署。
+**最简单的方式：一条命令。** 自动完成 Docker 环境、官方 TeslaMate 4.5.0、中文版仪表盘、8 项分类导航、导航自愈定时器；全新服务器无需输入任何密码（自动生成并在结尾打印）。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/main/scripts/install-from-zero.sh | sudo bash
 ```
 
-脚本会自动生成并保存密钥、启动官方 TeslaMate 4.5.0、迁移中文版并应用补丁；最后只需在网页完成 Tesla 账号授权。详见 [从零开始说明](docs/first-install.md)。
+脚本会自动生成并保存密钥、启动官方 TeslaMate 4.5.0、迁移中文版并应用补丁、装好导航自愈；最后只需在网页完成 Tesla 账号授权。详见 [从零开始说明](docs/first-install.md)。
 
 ### 先选你的情况（只走一条路径）
 
@@ -135,27 +137,16 @@ sudo systemctl reload nginx
 
 如果未生效，先强制刷新或使用无痕窗口；其次检查 Nginx 配置是否已注入两个 JavaScript 文件。
 
-### 第 6 步（可选但强烈推荐）：让导航重启后不被打回
+### 第 6 步：导航自愈（安装时已自动完成）
 
-镜像里的面板提供器会在每次 Grafana 启动时按文件重新导入面板，把本补丁写的导航和分类覆盖回默认值。两种处理方式：
-
-**A. 自愈定时器（风险最低，重启后最多等一轮）**
+整合安装会自动装好 `teslamate-cn-nav.timer`：开机 2 分钟后首跑，之后每 5 分钟一轮，只在导航被镜像覆盖时才写库。校验：
 
 ```bash
-cd /opt/teslamate-cn-patches
-sudo GRAFANA_PASSWORD='你的密码' bash scripts/install-navigation-selfheal.sh \
-  --compose-file /opt/teslamate/compose.yml
+systemctl list-timers 'teslamate-cn-nav*'
+journalctl -u teslamate-cn-nav.service -n 20 --no-pager   # 已生效时应是 changed=0
 ```
 
-**B. 零窗口（关掉镜像的文件提供器，重启后立即就是补丁导航）**
-
-```bash
-cd /opt/teslamate-cn-patches
-sudo GRAFANA_PASSWORD='你的密码' python3 scripts/enable-zero-window-navigation.py \
-  --compose-file /opt/teslamate/compose.yml
-```
-
-选择 B 意味着以后镜像升级不会再自动带来新的官方仪表盘；脚本会先导出面板快照再动配置，面板万一被清空也能一条命令恢复。完整原理、验收与回滚见 [导航持久化说明](docs/grafana-navigation-persistence.md)。
+不想装：`--skip-navigation-selfheal`。想要重启**零等待**（关掉镜像的文件提供器，代价是镜像升级不再带来新官方面板）：见 [导航持久化说明](docs/grafana-navigation-persistence.md) 的方案 B。
 
 ## 升级后如何恢复
 
