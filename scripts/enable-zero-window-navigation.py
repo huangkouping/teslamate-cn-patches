@@ -77,7 +77,9 @@ def inject_mount(text, service, line):
             last_item = k
         elif block[k].strip() and indent_level(block[k]) <= 4:
             break
-    if any(mount_line in raw for raw in block):
+    # 兼容用户自己已经做过的手工挂载（目录名不必相同）
+    if any("/etc/grafana/provisioning/dashboards" in raw and raw.lstrip().startswith("- ")
+           for raw in block):
         return text, False
     new_block = block[: last_item + 1] + [f"      {mount_line}\n"] + block[last_item + 1 :]
     return "".join(lines[:start] + new_block + lines[end:]), True
@@ -88,7 +90,7 @@ new_text, changed = inject_mount(text, args.service, mount_line)
 if changed:
     print(f"将向 {compose} 的 {args.service} 服务添加只读挂载：\n  {mount_line}")
 else:
-    print("Compose 里已经有该挂载，跳过修改。")
+    print("Compose 里已经存在 provisioning/dashboards 挂载，跳过修改。")
 
 if args.dry_run:
     print("\n--dry-run：不执行导出、写入、重建与恢复。")
