@@ -22,6 +22,14 @@
 
 安装关系为：**官方 TeslaMate → 本仓库的一次整合安装（中文版仪表盘 + 本补丁）**。
 
+## 一分钟开始（全新服务器）
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/main/scripts/install-from-zero.sh | sudo bash
+```
+
+一条命令装完：Docker 环境、官方 TeslaMate 4.5.0、中文版仪表盘、8 项分类导航、导航自愈定时器（重启后自动恢复，无需再配置）。想分步看过程见 [从零开始](docs/first-install.md)。
+
 ## 版本与下载
 
 当前稳定版：[**v1.2.0**](https://github.com/huangkouping/teslamate-cn-patches/releases/tag/v1.2.0)。版本历史与变更说明见 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases)。
