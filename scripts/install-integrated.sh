@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-PATCH_VERSION="v1.1.0"
+PATCH_VERSION="v1.2.0"
 CN_VERSION="v1.13.0"
 CN_REPO="https://github.com/wjsall/teslamate-chinese-dashboards.git"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -13,6 +13,7 @@ COMPOSE_FILE="${COMPOSE_FILE:-}"
 ASSUME_YES=0
 SKIP_GRAFANA=0
 NGINX_CONFIG="${NGINX_CONFIG:-}"
+SELFHEAL=1
 
 usage() {
   cat <<'EOF'
@@ -24,6 +25,7 @@ usage() {
   --yes                            跳过开始前确认（仍会要求输入 Grafana 密码）
   --skip-grafana-patches           只迁移中文版仪表盘，不运行本仓库的 Grafana 菜单补丁
   --nginx-config /路径/站点.conf   自动安全配置标准 Nginx 站点；会先备份、测试再重载
+  --skip-navigation-selfheal       不安装导航自愈定时器（默认安装）
   -h, --help                       显示帮助
 
 环境变量：
@@ -43,6 +45,7 @@ while [[ $# -gt 0 ]]; do
     --yes) ASSUME_YES=1; shift ;;
     --skip-grafana-patches) SKIP_GRAFANA=1; shift ;;
     --nginx-config) NGINX_CONFIG="${2:?--nginx-config 需要文件路径}"; shift 2 ;;
+    --skip-navigation-selfheal) SELFHEAL=0; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "未知参数：$1" >&2; usage >&2; exit 2 ;;
   esac
@@ -69,8 +72,9 @@ fi
 cat <<EOF
 将执行以下受控操作：
   1. 使用中文版仪表盘 ${CN_VERSION} 的官方迁移脚本，把官方 Grafana 切换为中文版；
-  2. 通过 Grafana API 应用本仓库 ${PATCH_VERSION} 的分类、导航与概览提示；
-  3. 在 ${ROOT_DIR}/backups 中保留仪表盘修改前的备份。
+  2. 通过 Grafana API 应用本仓库 ${PATCH_VERSION} 的分类、8 项导航与概览提示；
+  3. 安装 systemd 自愈定时器（teslamate-cn-nav.timer），Grafana 重启后导航自动恢复；
+  4. 在 ${ROOT_DIR}/backups 中保留仪表盘修改前的备份。
 
 不会修改 TeslaMate、PostgreSQL 或已有车辆数据。
 EOF
@@ -108,9 +112,23 @@ fi
 
 printf '\n==> 应用 Grafana 分类、导航与概览提示\n'
 cd "$ROOT_DIR"
-python3 scripts/tag_grafana_categories.py --backup-dir ./backups
-python3 scripts/sync_grafana_navigation.py --backup-dir ./backups
+python3 scripts/reapply_grafana_customizations.py --backup-dir ./backups
 python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
+
+selfheal_installed=0
+if [[ "$SELFHEAL" == "1" ]] && command -v systemctl >/dev/null 2>&1; then
+  printf '\n==> 安装导航自愈定时器（重启后自动恢复分类导航）\n'
+  if GRAFANA_URL="${GRAFANA_URL:-http://127.0.0.1:3000}" bash scripts/install-navigation-selfheal.sh \
+       --compose-file "$COMPOSE_FILE" --interval 5; then
+    selfheal_installed=1
+  else
+    echo "自愈定时器安装失败；导航当前可用，但 Grafana 重启后会被镜像覆盖。可稍后重跑：sudo bash scripts/install-navigation-selfheal.sh --compose-file $COMPOSE_FILE" >&2
+  fi
+elif [[ "$SELFHEAL" != "1" ]]; then
+  echo "已按要求跳过导航自愈定时器（--skip-navigation-selfheal）。"
+else
+  echo "当前系统没有 systemd，跳过导航自愈定时器。"
+fi
 
 nginx_configured=0
 if command -v nginx >/dev/null 2>&1; then
@@ -128,8 +146,14 @@ fi
 
 cat <<EOF
 
-完成：中文版仪表盘和 Grafana 优化已应用。
+完成：中文版仪表盘、分类导航和 Grafana 优化已应用。
 EOF
+
+if [[ "$selfheal_installed" == "1" ]]; then
+  echo "导航自愈已装好（5 分钟一轮，开机 2 分钟后首跑）：Grafana 重启后最多等一轮就会自动恢复。"
+else
+  echo "提示：导航未装自愈定时器，Grafana 重启后会回到镜像默认导航。"
+fi
 
 if [[ "$nginx_configured" == "1" ]]; then
   echo "Nginx 浏览器补丁已自动配置并重载；请使用浏览器强制刷新或无痕窗口验收。"
