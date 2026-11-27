@@ -110,7 +110,7 @@ GRAFANA_PASSWORD="$GRAFANA_PASSWORD" bash "$REPO_DIR/scripts/install-integrated.
 
 cat <<EOF
 
-安装完成。请妥善保存以下信息（不会再次显示）：
+安装完成（官方 TeslaMate + 中文仪表盘 + 导航补丁 + 导航自愈定时器）。请妥善保存以下信息（不会再次显示）：
   TeslaMate: http://服务器IP:4000
   Grafana:    http://服务器IP:3000
   Grafana 用户名: admin
