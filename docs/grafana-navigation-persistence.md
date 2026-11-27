@@ -67,10 +67,10 @@ GRAFANA_PASSWORD='你的密码' python3 scripts/reapply_grafana_customizations.p
 GRAFANA_PASSWORD='你的密码' python3 scripts/reapply_grafana_customizations.py --backup-dir ./backups
 ```
 
-菜单具体项（低一档就是少了末尾的“行车视频编辑”）：
+菜单项开关：
 
 ```bash
---no-drivo-link     # 不要 App Store 入口
+--no-drivo-link     # 去掉末尾的 App Store 入口
 --home-uid <UID>    # “首页”指向别的面板
 ```
 
@@ -95,7 +95,7 @@ sudo GRAFANA_PASSWORD='你的密码' python3 scripts/enable-zero-window-navigati
 它会做：
 
 1. 把全部面板导出到 `<compose 目录>/backups/provisioning-off-<时间>/`
-2. 备份 Compose，在 grafana 服务的 `volumes` 里加一行只读挂载（空目录顶掉提供器）；如果 Compose 里已经有任何挂到 `/etc/grafana/provisioning/dashboards` 的条目（哪怕是手工加的、目录名不同），会直接跳过修改
+2. 备份 Compose，在 grafana 服务的 `volumes` 里加一行只读挂载（空目录顶掉提供器）；如果 Compose 里已经有任何挂到 `/etc/grafana/provisioning/dashboards` 的条目（哪怕是手工加的、目录名不同），直接跳过修改
 3. `docker compose up -d --force-recreate --no-deps grafana`
 4. 等 `/api/health` 就绪
 5. 从快照导入全部面板（带原文件夹）
