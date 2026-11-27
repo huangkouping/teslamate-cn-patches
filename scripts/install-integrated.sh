@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-PATCH_VERSION="v1.2.0"
+PATCH_VERSION="v1.2.1"
 CN_VERSION="v1.13.0"
 CN_REPO="https://github.com/wjsall/teslamate-chinese-dashboards.git"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

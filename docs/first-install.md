@@ -6,7 +6,7 @@
 - `teslamate-chinese-dashboards` v1.13.0 中文版仪表盘；
 - 本仓库的高德定位跳转、中文菜单、Grafana 分组导航等优化。
 
-本仓库不是 TeslaMate 的替代品，而是安装在 **官方 TeslaMate + 中文版仪表盘** 之上的补丁层。当前经过完整验证的组合是：TeslaMate **4.5.0**、中文版仪表盘 **v1.13.0**、本补丁 **v1.2.0**。不要把“最新版”直接替换进这套组合；有新版本时，以 [兼容性页面](compatibility.md) 和 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases) 标明的支持范围为准。
+本仓库不是 TeslaMate 的替代品，而是安装在 **官方 TeslaMate + 中文版仪表盘** 之上的补丁层。当前经过完整验证的组合是：TeslaMate **4.5.0**、中文版仪表盘 **v1.13.0**、本补丁 **v1.2.1**。不要把“最新版”直接替换进这套组合；有新版本时，以 [兼容性页面](compatibility.md) 和 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases) 标明的支持范围为准。
 
 已有 TeslaMate 的用户不要重复执行本页的一键脚本，以免覆盖现有 Compose 配置；请改看 [已有系统安装与升级](installation.md)。
 
