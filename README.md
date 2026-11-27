@@ -54,6 +54,7 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 - 长菜单自动两列展示；短菜单保留紧凑列表。
 - “说明文档”本身不跳转，点击后显示三个外部资源：TeslaMate官方、Grafana 中文版仪表盘、全中文版补丁。
 - 概览页的能耗与行驶里程卡片标明“当前时段”；筛选范围内没有行程时显示“暂无行驶数据”，避免被误认为系统故障。
+- 导航与分类写在数据库里，重启后可自动恢复：镜像自带的文件提供器会把它覆盖回默认值，本仓库提供自愈定时器（默认 5 分钟一轮）和“零窗口”两种处理方式，详见 [导航持久化说明](docs/grafana-navigation-persistence.md)。
 
 ## 安装：给首次使用者的完整步骤
 
@@ -132,7 +133,29 @@ sudo systemctl reload nginx
 4. 概览页在最近时间范围内无行程时，能耗/行驶里程应显示“暂无行驶数据”。
 5. 如启用了 4.5.0 高德底图补丁：右下角显示“高德地图”，放大地图后仍为高德。
 
-如果未生效，先强制刷新或使用无痕窗口；其次检查 Nginx 配置是否已经注入两个 JavaScript 文件。
+如果未生效，先强制刷新或使用无痕窗口；其次检查 Nginx 配置是否已注入两个 JavaScript 文件。
+
+### 第 6 步（可选但强烈推荐）：让导航重启后不被打回
+
+镜像里的面板提供器会在每次 Grafana 启动时按文件重新导入面板，把本补丁写的导航和分类覆盖回默认值。两种处理方式：
+
+**A. 自愈定时器（风险最低，重启后最多等一轮）**
+
+```bash
+cd /opt/teslamate-cn-patches
+sudo GRAFANA_PASSWORD='你的密码' bash scripts/install-navigation-selfheal.sh \
+  --compose-file /opt/teslamate/compose.yml
+```
+
+**B. 零窗口（关掉镜像的文件提供器，重启后立即就是补丁导航）**
+
+```bash
+cd /opt/teslamate-cn-patches
+sudo GRAFANA_PASSWORD='你的密码' python3 scripts/enable-zero-window-navigation.py \
+  --compose-file /opt/teslamate/compose.yml
+```
+
+选择 B 意味着以后镜像升级不会再自动带来新的官方仪表盘；脚本会先导出面板快照再动配置，面板万一被清空也能一条命令恢复。完整原理、验收与回滚见 [导航持久化说明](docs/grafana-navigation-persistence.md)。
 
 ## 升级后如何恢复
 
@@ -140,7 +163,8 @@ sudo systemctl reload nginx
 2. 确认 TeslaMate、Grafana 和数据库均正常启动。
 3. 更新本仓库：`git pull`。
 4. 重新执行一次整合脚本；如前端菜单未显示，再检查第 4 步的 Nginx 注入。
-5. 参照 [升级与回归验证](docs/upgrading.md) 逐项检查。
+5. 如已启用自愈定时器：`systemctl start teslamate-cn-nav.service` 立即重刷一遍，无需等下一轮。
+6. 参照 [升级与回归验证](docs/upgrading.md) 逐项检查。
 
 ## 效果图
 
@@ -180,8 +204,8 @@ sudo systemctl reload nginx
 
 - `assets/`：浏览器端 UI、导航与说明文档菜单补丁。
 - `nginx/`：Nginx 合并示例。
-- `scripts/`：Grafana 分类、共享导航、概览空数据提示，以及 TeslaMate 4.5.0 高德底图的可重复执行脚本。
-- `docs/`：详细安装、Grafana 脚本、升级与验证说明。
+- `scripts/`：Grafana 分类与共享导航（一次性版本与幂等的自愈版本）、重启持久化、面板快照，以及 TeslaMate 4.5.0 高德底图的可重复执行脚本。
+- `docs/`：详细安装、Grafana 脚本、导航持久化、升级与验证说明。
 
 ## 贡献与安全
 
@@ -193,6 +217,8 @@ sudo systemctl reload nginx
 
 ## 项目统计
 
-[![Stars](https://img.shields.io/github/stars/huangkouping/teslamate-cn-patches?style=flat-square&label=收藏)](https://github.com/huangkouping/teslamate-cn-patches/stargazers) [![Forks](https://img.shields.io/github/forks/huangkouping/teslamate-cn-patches?style=flat-square&label=派生)](https://github.com/huangkouping/teslamate-cn-patches/forks) [![Downloads](https://img.shields.io/github/downloads/huangkouping/teslamate-cn-patches/total?style=flat-square&label=发行附件下载)](https://github.com/huangkouping/teslamate-cn-patches/releases)
+[![Stars](https://img.shields.io/github/stars/huangkouping/teslamate-cn-patches?style=flat-square&label=收藏)](https://github.com/huangkouping/teslamate-cn-patches/stargazers)
+[![Forks](https://img.shields.io/github/forks/huangkouping/teslamate-cn-patches?style=flat-square&label=派生)](https://github.com/huangkouping/teslamate-cn-patches/network/members)
+[![Downloads](https://img.shields.io/github/downloads/huangkouping/teslamate-cn-patches/total?style=flat-square&label=发行附件下载)](https://github.com/huangkouping/teslamate-cn-patches/releases)
 
 > 上述为 GitHub 公开统计，不代表实际安装或活跃用户数。Raw 文件下载及订阅刷新不计入发行附件下载量。本统计面板不向安装脚本或模块添加设备追踪。
