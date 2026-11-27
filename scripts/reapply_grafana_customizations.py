@@ -32,7 +32,10 @@ parser.add_argument("--user", default=os.getenv("GRAFANA_USER", "admin"))
 parser.add_argument("--home-uid", default=os.getenv("GRAFANA_HOME_DASHBOARD_UID", "jchmo4BNRkZz"))
 parser.add_argument("--backup-dir", default="./backups")
 parser.add_argument("--keep-backups", type=int, default=5, help="保留最近几个备份目录（0 表示不清理）")
-parser.add_argument("--include-drivo-link", action="store_true", help="追加可选的 App Store 行车视频编辑入口")
+parser.add_argument("--include-drivo-link", dest="include_drivo_link", action="store_true",
+                    default=True, help="在导航末尾追加“行车视频编辑”入口（默认开启）")
+parser.add_argument("--no-drivo-link", dest="include_drivo_link", action="store_false",
+                    help="不加“行车视频编辑”入口")
 parser.add_argument("--dry-run", action="store_true", help="只报告差异，不写回")
 parser.add_argument("--quiet", action="store_true", help="只在有改动时输出")
 args = parser.parse_args()
@@ -114,7 +117,7 @@ for item in api("/api/search?type=dash-db"):
     })
     changed += 1
 
-summary = "changed={} total={} " .format(changed, sum(counts.values()))
+summary = "changed={} total={} ".format(changed, sum(counts.values()))
 summary += " ".join(f"{k[4:]}={v}" for k, v in sorted(counts.items()))
 if changed or not args.quiet:
     print(summary + (f" backup={backup}" if backup else (" (dry-run)" if args.dry_run else "")))
