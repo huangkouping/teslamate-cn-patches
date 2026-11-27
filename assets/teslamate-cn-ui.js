@@ -64,7 +64,7 @@
         a.dataset.tooltip = label; a.setAttribute("aria-label", label); a.dataset.cnMapPatched = "1";
         const textNodes = [...a.childNodes].filter(n => n.nodeType === 3 && n.nodeValue.trim());
         if (textNodes.length) { textNodes[0].nodeValue = label; textNodes.slice(1).forEach(n => n.remove()); }
-        else if (!a.querySelector("svg,img")) a.textContent = label;
+        else if (!a.firstElementChild) a.textContent = label;
       } catch (_) {}
     });
     root.querySelectorAll('a[href*="/grafana//"]').forEach(a => { a.href = a.href.replace("/grafana//", "/grafana/"); });
