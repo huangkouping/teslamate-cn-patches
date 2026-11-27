@@ -54,19 +54,30 @@
     const sqrtMagic = Math.sqrt(magic);
     return {lat: lat + dLat * 180 / ((6335552.717000426 * (1 - 0.00669342162296594323)) / (magic * sqrtMagic) * Math.PI), lng: lng + dLng * 180 / (6378245 / sqrtMagic * Math.cos(rad) * Math.PI)};
   };
-  function patch(root = document) {
-    root.querySelectorAll('a[href^="https://www.google.com/maps?q="]').forEach(a => {
-      if (a.dataset.cnMapPatched) return;
-      try {
-        const q = new URL(a.href).searchParams.get("q").split(","); const p = gcj(Number(q[0]), Number(q[1]));
-        a.href = `https://uri.amap.com/marker?position=${p.lng.toFixed(6)},${p.lat.toFixed(6)}&name=${encodeURIComponent("车辆位置")}`;
-        const label = "在高德地图中查看车辆位置";
-        a.dataset.tooltip = label; a.setAttribute("aria-label", label); a.dataset.cnMapPatched = "1";
+  const MAP_LABEL = "在高德地图中查看车辆位置";
+  const amapHref = href => {
+    const m = href.match(/q=([-\d.]+),([-\d.]+)/);
+    if (!m) return null;
+    const p = gcj(Number(m[1]), Number(m[2]));
+    return `https://uri.amap.com/marker?position=${p.lng.toFixed(6)},${p.lat.toFixed(6)}&name=${encodeURIComponent("车辆位置")}`;
+  };
+  function patchMapLinks(root) {
+    root.querySelectorAll('a[href*="google.com/maps"], a[href*="uri.amap.com"], a[data-tooltip*="Google Maps"]').forEach(a => {
+      const href = a.getAttribute("href") || "";
+      if (href.indexOf("google.com/maps") !== -1) {
+        const target = amapHref(href);
+        if (target) a.setAttribute("href", target);
+      }
+      if (a.hasAttribute("data-tooltip")) a.setAttribute("data-tooltip", MAP_LABEL);
+      a.setAttribute("aria-label", MAP_LABEL);
+      if (a.children.length === 0) {
         const textNodes = [...a.childNodes].filter(n => n.nodeType === 3 && n.nodeValue.trim());
-        if (textNodes.length) { textNodes[0].nodeValue = label; textNodes.slice(1).forEach(n => n.remove()); }
-        else if (!a.firstElementChild) a.textContent = label;
-      } catch (_) {}
+        if (textNodes.length) textNodes[0].nodeValue = MAP_LABEL;
+      }
     });
+  }
+  function patch(root = document) {
+    patchMapLinks(root);
     root.querySelectorAll('a[href*="/grafana//"]').forEach(a => { a.href = a.href.replace("/grafana//", "/grafana/"); });
     root.querySelectorAll("a").forEach(a => {
       const text = a.textContent.trim();
@@ -76,6 +87,6 @@
     organizeMenu();
   }
   const observer = new MutationObserver(() => patch());
-  observer.observe(document.documentElement, {childList: true, subtree: true});
+  observer.observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ["href"]});
   patch();
 })();
