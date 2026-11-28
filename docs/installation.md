@@ -73,8 +73,6 @@ python3 scripts/sync_grafana_navigation.py --backup-dir ./backups
 python3 scripts/patch_overview_empty_state.py --backup-dir ./backups
 ```
 
-需要额外展示“行车视频编辑”时，仅在第二条命令增加 `--include-drivo-link`。该链接不是补丁正常运行的必需项。
-
 ## 5. 可选：TeslaMate 4.5.0 高德底图
 
 仅适用于 [兼容性说明](compatibility.md)中列出的 TeslaMate **4.5.0**。脚本先校验官方前端资源的 SHA-256；不匹配时会拒绝执行。
@@ -101,8 +99,8 @@ sudo nginx -t && sudo systemctl reload nginx
 
 1. TeslaMate 控制台：中文分组、双列菜单正常；位置图标进入高德地图且定位无偏移。
 2. TeslaMate 地图（若执行第 5 步的可选高德底图）：右下角显示“高德地图”，放大后的地图仍为高德。
-3. Grafana：导航在车/地图/时间等筛选器之前；长下拉菜单为两列。
-4. 点击“说明文档”：显示三个外部链接；按钮自身不直接跳转。
+3. Grafana：导航在车/地图/时间等筛选器之前（首页 / 车况 / 行程轨迹 / 驾驶与能耗 / 充电统计 / 电池 / 帮助）；桌面端长菜单为两列，手机端单列。
+4. 点击“帮助”：显示三个外部链接；按钮自身不直接跳转。
 5. 概览页在选定时间范围无行程时，三张卡片显示“暂无行驶数据”。
 
 若未生效，先使用无痕窗口或强制刷新；随后检查 Nginx 错误日志，以及 `/teslamate-cn-ui.js`、`/grafana-nav-order.js` 是否返回 HTTP 200。

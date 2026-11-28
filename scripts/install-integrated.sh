@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-PATCH_VERSION="v1.2.2"
+PATCH_VERSION="v1.2.3"
 CN_VERSION="v1.13.0"
 CN_REPO="https://github.com/wjsall/teslamate-chinese-dashboards.git"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -72,7 +72,7 @@ fi
 cat <<EOF
 将执行以下受控操作：
   1. 使用中文版仪表盘 ${CN_VERSION} 的官方迁移脚本，把官方 Grafana 切换为中文版；
-  2. 通过 Grafana API 应用本仓库 ${PATCH_VERSION} 的分类、8 项导航与概览提示；
+  2. 通过 Grafana API 应用本仓库 ${PATCH_VERSION} 的分类、6 项分类导航与概览提示；
   3. 安装 systemd 自愈定时器（teslamate-cn-nav.timer），Grafana 重启后导航自动恢复；
   4. 在 ${ROOT_DIR}/backups 中保留仪表盘修改前的备份。
 

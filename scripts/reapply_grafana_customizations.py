@@ -1,30 +1,26 @@
 #!/usr/bin/env python3
 """幂等地重新应用 Grafana 中文导航（分类标签 + 共享导航链接）。
 
-与 tag_grafana_categories.py / sync_grafana_navigation.py 的关系：
-- 这两支脚本各扫一遍面板、各写一次库，适合一次性安装；
-- 本脚本把两件事合并成一次遍历，并且只在内容真的变化时才写回，
-  因此可以安全地交给 systemd 定时器每 5 分钟跑一次（见 install-navigation-selfheal.sh）；
+分类结构、静音面板与顶栏顺序都来自 scripts/nav_definition.py（唯一权威定义），
+本脚本只负责“读 → 对比 → 只在有差异时写回”，因此可以安全地交给 systemd
+定时器每 5 分钟跑一次（见 scripts/install-navigation-selfheal.sh）。
+
+- 与 tag_grafana_categories.py / sync_grafana_navigation.py 的关系：那两支适合
+  一次性安装；本脚本把两件事合并成一次遍历并做幂等判断，供自愈使用。
 - 写回时带 folderUid，避免面板从原文件夹掉回 General。
+- 静音面板（概览 / 首页 / 状态 / 不完整的数据）会被清掉 nav_* 标签，不进菜单。
 
 用法：
     GRAFANA_PASSWORD=... python3 scripts/reapply_grafana_customizations.py --backup-dir ./backups
 """
 import argparse
-import base64
 import json
 import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from urllib.request import Request, urlopen
 
-GROUPS = {
-    "nav_common": {"kOuP_Fggz", "jchmo4BNRkZz", "SUBgwtigz", "RG_DxSmgk", "ZzhF-aRWz", "be2m9kga7b8qoc"},
-    "nav_vehicle": {"xo4BNRkZz", "jchmkOuP_Fggz", "IiC07mgWz", "q4YF9XA4k", "vehicle-comparison", "jchmDbInfo", "jchmIDopVO_mgz"},
-    "nav_charge": {"jchmRiqUfXgTM", "WopVO_mgz", "TSmNYvRRk", "-pkIkhmRz", "BHhxFeZRz", "jchmDdLe5uFVk", "charging-health-cn", "jchm9RxutVS7a", "jchmXpkcccIkh", "jchmXpkIkhmRz", "zhHx2Fggk", "station-ranking"},
-    "nav_drive": {"Y8upc6ZRk", "1EZnXszMk", "FkUpJpQZk", "_7WkNSyWk", "jchmY8upc6ZRk", "zm7wN6Zgz", "jchmNjtMTFx", "NjtMTFggz", "fu4SiQgWz", "jchmfu4SiQgWz", "jchm_9z40b", "sentry-drain-cn", "driving-patterns-cn", "regen-braking-cn", "annual-summary-cn", "jchmX8upc6ZRk", "driving-score", "weather-efficiency"},
-}
+import nav_definition as nav
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument("--url", default=os.getenv("GRAFANA_URL", "http://127.0.0.1:3000"))
@@ -32,51 +28,15 @@ parser.add_argument("--user", default=os.getenv("GRAFANA_USER", "admin"))
 parser.add_argument("--home-uid", default=os.getenv("GRAFANA_HOME_DASHBOARD_UID", "jchmo4BNRkZz"))
 parser.add_argument("--backup-dir", default="./backups")
 parser.add_argument("--keep-backups", type=int, default=5, help="保留最近几个备份目录（0 表示不清理）")
-parser.add_argument("--include-drivo-link", dest="include_drivo_link", action="store_true",
-                    default=True, help="在导航末尾追加“行车视频编辑”入口（默认开启）")
-parser.add_argument("--no-drivo-link", dest="include_drivo_link", action="store_false",
-                    help="不加“行车视频编辑”入口")
 parser.add_argument("--dry-run", action="store_true", help="只报告差异，不写回")
 parser.add_argument("--quiet", action="store_true", help="只在有改动时输出")
 args = parser.parse_args()
 
-links = [
-    {"type": "link", "title": "首页", "tooltip": "最近车辆状态", "icon": "home",
-     "url": "/grafana/d/" + args.home_uid, "targetBlank": False, "includeVars": False, "keepTime": False},
-    {"type": "dashboards", "title": "概况", "icon": "dashboard", "tags": ["nav_common"], "asDropdown": True},
-    {"type": "dashboards", "title": "车辆", "icon": "car", "tags": ["nav_vehicle"], "asDropdown": True},
-    {"type": "dashboards", "title": "行驶与能耗", "icon": "road", "tags": ["nav_drive"], "asDropdown": True},
-    {"type": "dashboards", "title": "充电与电池", "icon": "bolt", "tags": ["nav_charge"], "asDropdown": True},
-    {"type": "dashboards", "title": "分析与工具", "icon": "apps", "tags": ["nav_analysis"], "asDropdown": True},
-    {"type": "link", "title": "说明文档", "icon": "doc", "url": "#",
-     "targetBlank": False, "includeVars": False, "keepTime": False},
-]
-if args.include_drivo_link:
-    links.append({"type": "link", "title": "行车视频编辑", "icon": "external link",
-                  "url": "https://apps.apple.com/cn/app/drivo-%E8%BD%A6%E8%AE%B0/id6773553521",
-                  "targetBlank": True, "includeVars": False, "keepTime": False})
-
-password = os.environ["GRAFANA_PASSWORD"]
-auth = base64.b64encode(f"{args.user}:{password}".encode()).decode()
-
-
-def api(path, method="GET", payload=None):
-    request = Request(args.url.rstrip("/") + path,
-                      data=None if payload is None else json.dumps(payload, ensure_ascii=False).encode(),
-                      method=method,
-                      headers={"Authorization": "Basic " + auth, "Content-Type": "application/json"})
-    with urlopen(request, timeout=20) as response:
-        return json.load(response)
-
-
-def category(uid):
-    for tag, uids in GROUPS.items():
-        if uid in uids:
-            return tag
-    return "nav_analysis"
-
+auth = nav.basic_auth(args.user, os.environ["GRAFANA_PASSWORD"])
+links = nav.build_links(args.home_uid)
 
 backup = None
+
 
 def ensure_backup():
     global backup
@@ -89,18 +49,21 @@ def ensure_backup():
             shutil.rmtree(stale, ignore_errors=True)
     return backup
 
+
 changed = 0
 counts = {}
-for item in api("/api/search?type=dash-db"):
+for item in nav.fetch_dashboards(args.url, auth):
     uid = item["uid"]
-    record = api("/api/dashboards/uid/" + uid)
+    record = nav.fetch_dashboard(args.url, auth, uid)
     dashboard = record["dashboard"]
     original = json.dumps({k: dashboard.get(k) for k in ("tags", "links")}, ensure_ascii=False, sort_keys=True)
 
-    tag = category(uid)
-    counts[tag] = counts.get(tag, 0) + 1
+    tag = nav.category(uid)
+    counts[tag or "(无菜单)"] = counts.get(tag or "(无菜单)", 0) + 1
     tags = [t for t in dashboard.get("tags", []) if not t.startswith("nav_")]
-    dashboard["tags"] = tags + [tag]
+    if tag:
+        tags.append(tag)
+    dashboard["tags"] = tags
     dashboard["links"] = [dict(link) for link in links]
 
     if json.dumps({k: dashboard.get(k) for k in ("tags", "links")}, ensure_ascii=False, sort_keys=True) == original:
@@ -109,15 +72,10 @@ for item in api("/api/search?type=dash-db"):
         changed += 1
         continue
     (ensure_backup() / f"{uid}.json").write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
-    api("/api/dashboards/db", "POST", {
-        "dashboard": dashboard,
-        "folderUid": record.get("meta", {}).get("folderUid"),
-        "overwrite": True,
-        "message": "Reapply shared navigation",
-    })
+    nav.save_dashboard(args.url, auth, record, dashboard, "Reapply shared navigation")
     changed += 1
 
 summary = "changed={} total={} ".format(changed, sum(counts.values()))
-summary += " ".join(f"{k[4:]}={v}" for k, v in sorted(counts.items()))
+summary += " ".join(f"{k[4:] if k.startswith('nav_') else k}={v}" for k, v in sorted(counts.items()))
 if changed or not args.quiet:
     print(summary + (f" backup={backup}" if backup else (" (dry-run)" if args.dry_run else "")))

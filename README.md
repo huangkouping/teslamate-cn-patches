@@ -28,7 +28,7 @@
 curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/main/scripts/install-from-zero.sh | sudo bash
 ```
 
-一条命令装完：Docker 环境、官方 TeslaMate 4.5.0、中文版仪表盘、8 项分类导航、导航自愈定时器（重启后自动恢复，无需再配置）。想分步看过程见 [从零开始](docs/first-install.md)。
+一条命令装完：Docker 环境、官方 TeslaMate 4.5.0、中文版仪表盘、6 项分类导航、导航自愈定时器（重启后自动恢复，无需再配置）。想分步看过程见 [从零开始](docs/first-install.md)。
 
 ## 版本与下载
 
@@ -60,9 +60,9 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 ### B. Grafana 中文版仪表盘
 
 - 共享导航统一放在车/地图/时间等筛选器之前，先导航、后筛选。
-- 所有仪表盘分为“概况、车辆、行驶与能耗、充电与电池、分析与工具”，保留原有页面，不删除数据分析页面。
-- 长菜单自动两列展示；短菜单保留紧凑列表。
-- “说明文档”本身不跳转，点击后显示三个外部资源：TeslaMate官方、Grafana 中文版仪表盘、全中文版补丁。
+- 所有仪表盘分为“车况、行程轨迹、驾驶与能耗、充电统计、电池”五个分类，另加首页与帮助；保留原有页面，不删除数据分析页面。
+- 长菜单按整块分组分两列展示（驾驶 / 能耗+里程、充电 / 费用），短菜单保留紧凑单列；窄屏自动退回单列并允许标题换行。
+- “帮助”本身不跳转，点击后显示三个外部资源：TeslaMate官方、Grafana 中文版仪表盘、全中文版补丁。
 - 概览页的能耗与行驶里程卡片标明“当前时段”；筛选范围内没有行程时显示“暂无行驶数据”，避免被误认为系统故障。
 - 导航与分类写在数据库里，重启后自动恢复：安装时即装好自愈定时器（默认 5 分钟一轮），无需手工配置；追求重启零等待可用“零窗口”模式，详见 [导航持久化说明](docs/grafana-navigation-persistence.md)。
 
@@ -70,7 +70,7 @@ TeslaMate 和 Grafana 都会持续演进，升级可能改变前端结构、面�
 
 **还没有安装 TeslaMate？** 请先阅读并完成 [从零开始：官方 TeslaMate + 中文优化](docs/first-install.md)。该页把官方基础部署、首次 Tesla 授权和本仓库的一次整合安装串成完整流程。
 
-**最简单的方式：一条命令。** 自动完成 Docker 环境、官方 TeslaMate 4.5.0、中文版仪表盘、8 项分类导航、导航自愈定时器；全新服务器无需输入任何密码（自动生成并在结尾打印）。
+**最简单的方式：一条命令。** 自动完成 Docker 环境、官方 TeslaMate 4.5.0、中文版仪表盘、6 项分类导航、导航自愈定时器；全新服务器无需输入任何密码（自动生成并在结尾打印）。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/main/scripts/install-from-zero.sh | sudo bash
@@ -138,7 +138,7 @@ sudo systemctl reload nginx
 ### 第 5 步：验证
 
 1. 原生 TeslaMate：控制台菜单应中文分组；位置图标应打开高德地图。
-2. Grafana：导航位于筛选器前；“说明文档”点击后出现三项菜单。
+2. Grafana：导航位于筛选器前（首页 / 车况 / 行程轨迹 / 驾驶与能耗 / 充电统计 / 电池 / 帮助）；“帮助”点击后出现三项菜单。
 3. 打开一张行驶/充电相关页面：长菜单应显示为两列。
 4. 概览页在最近时间范围内无行程时，能耗/行驶里程应显示“暂无行驶数据”。
 5. 如启用了 4.5.0 高德底图补丁：右下角显示“高德地图”，放大地图后仍为高德。
@@ -179,36 +179,16 @@ journalctl -u teslamate-cn-nav.service -n 20 --no-pager   # 已生效时应是 c
 
 ![Grafana 概览](docs/images/08-grafana-overview.png)
 
-### Grafana：概况分类
-
-![Grafana 概况菜单](docs/images/03-grafana-overview-menu.jpg)
-
-### Grafana：导航优先
-
-![Grafana 导航优先](docs/images/04-grafana-navigation-first.jpg)
-
-### Grafana：车辆分类
-
-![Grafana 车辆菜单](docs/images/05-grafana-vehicle-menu.jpg)
-
-### Grafana：行驶双列菜单
-
-![Grafana 行驶菜单](docs/images/06-grafana-drive-menu.jpg)
-
-### Grafana：分析与工具
-
-![Grafana 分析菜单](docs/images/07-grafana-analysis-menu.jpg)
-
 ## 目录说明
 
-- `assets/`：浏览器端 UI、导航与说明文档菜单补丁。
+- `assets/`：浏览器端 UI、导航排序/分列与帮助菜单补丁。
 - `nginx/`：Nginx 合并示例。
-- `scripts/`：Grafana 分类与共享导航（一次性版本与幂等的自愈版本）、重启持久化、面板快照，以及 TeslaMate 4.5.0 高德底图的可重复执行脚本。
+- `scripts/`：`nav_definition.py` 是导航结构唯一权威定义；分类打标、共享导航、幂等自愈、重启持久化、面板快照，以及 TeslaMate 4.5.0 高德底图的可重复执行脚本。
 - `docs/`：详细安装、Grafana 脚本、导航持久化、升级与验证说明。
 
 ## 贡献与安全
 
-欢迎提交可复用改进。请勿提交数据库导出、车辆地址/行程截图、域名、IP、令牌、私钥、密码或现网完整配置。新增菜单请按照实际使用逻辑归入现有分类；如需新增分类，请同步更新脚本与说明文档。
+欢迎提交可复用改进。请勿提交数据库导出、车辆地址/行程截图、域名、IP、令牌、私钥、密码或现网完整配置。新增菜单请按照实际使用逻辑归入现有分类；分类与顶栏结构统一在 `scripts/nav_definition.py` 里改。
 
 ## 许可证
 
