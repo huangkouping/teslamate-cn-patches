@@ -32,7 +32,7 @@ curl -fsSL https://raw.githubusercontent.com/huangkouping/teslamate-cn-patches/m
 
 ## 版本与下载
 
-当前稳定版：[**v1.2.2**](https://github.com/huangkouping/teslamate-cn-patches/releases/tag/v1.2.2)。版本历史与变更说明见 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases)。
+当前稳定版：[**v1.2.3**](https://github.com/huangkouping/teslamate-cn-patches/releases/tag/v1.2.3)。版本历史与变更说明见 [Releases](https://github.com/huangkouping/teslamate-cn-patches/releases)。
 
 > v1.2.2 起，安装脚本会自动装好导航自愈定时器，**重启 Grafana 不会再退回默认导航**，装完无需任何额外操作。
 
